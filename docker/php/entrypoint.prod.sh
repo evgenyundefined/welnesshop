@@ -22,9 +22,16 @@ done
 say "running migrations"
 php artisan migrate --force
 
-# Uploaded photos live on a volume, so the link is remade on every start.
+# public/storage is baked into the image; only the writable tree is checked,
+# because a volume mounted with the wrong owner fails later and less clearly.
 mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
-[ -e public/storage ] || php artisan storage:link
+
+if [ ! -w storage/app/public ]; then
+    echo "[entrypoint] storage/app/public is not writable by $(id -un)." >&2
+    echo "[entrypoint] Uploaded photos would fail. Check the ownership of the volume" >&2
+    echo "[entrypoint] mounted at /var/www/html/storage/app/public." >&2
+    exit 1
+fi
 
 say "seeding the administrator"
 php artisan db:seed --class=AdminSeeder --force

@@ -37,8 +37,12 @@ WORKDIR /var/www/html
 COPY . .
 COPY --from=assets /app/public/build ./public/build
 
+# The link is made here, as root: public/ deliberately stays read-only for the
+# application, so www-data cannot create it at start-up. It is relative, so it
+# keeps resolving once the uploads volume is mounted over its target.
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
     && rm -rf /root/.composer \
+    && ln -sfn ../storage/app/public public/storage \
     && chown -R www-data:www-data storage bootstrap/cache
 
 COPY docker/php/entrypoint.prod.sh /usr/local/bin/entrypoint

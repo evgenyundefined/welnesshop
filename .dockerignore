@@ -3,6 +3,7 @@
 node_modules
 vendor
 public/build
+public/storage
 public/hot
 storage/framework/cache/data/*
 storage/framework/sessions/*
