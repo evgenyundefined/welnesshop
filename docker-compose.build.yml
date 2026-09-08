@@ -3,13 +3,18 @@
 # a Portainer web editor, for one.
 #
 #   docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
+#
+# pull_policy pins these two services to the local build: their images exist
+# nowhere to pull from, and a registry lookup for them is always an error.
 services:
   app:
+    pull_policy: build
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
 
   nginx:
+    pull_policy: build
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile.prod

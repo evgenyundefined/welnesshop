@@ -7,6 +7,7 @@ use App\Actions\Admin\Auth\LogoutAdmin;
 use App\Enums\Guard;
 use App\Payments\PaymentGateway;
 use App\Payments\PendingPaymentGateway;
+use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Foundation\Application;
@@ -34,10 +35,14 @@ class AppServiceProvider extends ServiceProvider
             ->give(static fn (Application $app): StatefulGuard => $app->make(AuthFactory::class)->guard(Guard::Admin->value));
     }
 
-    public function boot(): void
+    public function boot(Config $config): void
     {
         Model::shouldBeStrict(! $this->app->isProduction());
         Model::automaticallyEagerLoadRelationships();
-        URL::forceHttps($this->app->isProduction());
+
+        // Generated links follow the scheme the site is actually served on,
+        // which APP_URL declares. Forcing https on a deployment still running
+        // on plain http points every asset at a port nobody listens on.
+        URL::forceHttps(str_starts_with($config->string('app.url'), 'https://'));
     }
 }
