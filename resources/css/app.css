@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../js/**/*.vue';
+
+/*
+ * Two families carry the whole interface: ink for the chrome and the type,
+ * gold for anything the eye is meant to land on. Nothing else is defined, so a
+ * rebrand is a change to these values and nowhere else.
+ */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-ink-50: #f7f6f4;
+    --color-ink-100: #efedea;
+    --color-ink-200: #e0ddd8;
+    --color-ink-300: #c6c2bb;
+    --color-ink-400: #86827b;
+    --color-ink-500: #6d6963;
+    --color-ink-600: #524e49;
+    --color-ink-700: #3b3834;
+    --color-ink-800: #292724;
+    --color-ink-900: #1a1918;
+    --color-ink-950: #101010;
+
+    --color-gold-50: #fbf8ef;
+    --color-gold-100: #f6eed6;
+    --color-gold-200: #eddfb4;
+    --color-gold-300: #e5cd8e;
+    --color-gold-400: #dcbe74;
+    --color-gold-500: #cba75a;
+    --color-gold-600: #ab8842;
+    --color-gold-700: #866831;
+    --color-gold-800: #5f4a24;
+    --color-gold-900: #3d301a;
+}
