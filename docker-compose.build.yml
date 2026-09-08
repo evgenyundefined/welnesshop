@@ -1,0 +1,15 @@
+# Adds the build context to the production stack. Kept apart so that
+# docker-compose.prod.yml stays deployable where no source tree exists --
+# a Portainer web editor, for one.
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile.prod
