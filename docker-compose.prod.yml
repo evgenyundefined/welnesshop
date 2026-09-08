@@ -1,12 +1,12 @@
-# Production stack: the code, the dependencies and the built assets live inside
-# the images, so nothing is bind-mounted from the host and the whole thing can
-# be deployed by uploading this file plus environment variables.
+# Production stack. The code, the dependencies and the built assets live inside
+# the images, so nothing is bind-mounted and this file can be pasted straight
+# into a Portainer stack with the variables filled in beside it.
+#
+# The images themselves are built by the docker-compose.build.yml override:
+#   docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
 services:
   app:
     image: '${APP_IMAGE:-wellness-shop-app:latest}'
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile.prod
     restart: unless-stopped
     environment:
       APP_ENV: production
@@ -41,9 +41,6 @@ services:
 
   nginx:
     image: '${NGINX_IMAGE:-wellness-shop-nginx:latest}'
-    build:
-      context: .
-      dockerfile: docker/nginx/Dockerfile.prod
     restart: unless-stopped
     ports:
       - '${APP_PORT:-80}:80'

@@ -64,10 +64,17 @@ Redis наружу. Для боевого сервера есть отдельн
 
 `APP_KEY` задаётся переменной окружения, а не генерируется в контейнере: иначе
 каждый передеплой выдаёт новый ключ и разлогинивает всех разом. Сгенерируйте
-один раз локально и сохраните:
+один раз и сохраните — если PHP под рукой:
 
 ```bash
-docker compose run --rm app php artisan key:generate --show
+php artisan key:generate --show
+```
+
+Если нет, подойдёт любой контейнер с PHP: ключ — это 32 случайных байта в
+base64, ничего специфичного для Laravel в нём нет.
+
+```bash
+docker run --rm php:8.4-cli php -r "echo 'base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
 ```
 
 Контейнер не стартует без `APP_KEY` и скажет об этом в логе.
@@ -79,25 +86,54 @@ docker compose run --rm app php artisan key:generate --show
 `SHOP_ADMIN_PASSWORD`. Пароли не должны остаться дефолтными: `secret`, `root` и
 `Password1` из dev-конфигов в бою недопустимы.
 
-### 3. Сборка и запуск
+### 3. Сборка образов
 
-Если платформа умеет собирать из исходников:
-
-```bash
-docker compose -f docker-compose.prod.yml build
-docker compose -f docker-compose.prod.yml up -d
-```
-
-Если платформа принимает только готовые образы — соберите и запушьте их в
-реестр, а в переменных укажите `APP_IMAGE` и `NGINX_IMAGE`:
+Секции `build:` вынесены в отдельный оверлей `docker-compose.build.yml`, чтобы
+`docker-compose.prod.yml` оставался пригодным там, где исходников на хосте нет
+(панель Portainer, например). Локальная сборка и запуск:
 
 ```bash
-docker build -f docker/php/Dockerfile.prod -t $APP_IMAGE .
-docker build -f docker/nginx/Dockerfile.prod -t $NGINX_IMAGE .
-docker push $APP_IMAGE && docker push $NGINX_IMAGE
+docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
+docker compose -f docker-compose.prod.yml -f docker-compose.build.yml up -d
 ```
 
-### 4. После первого запуска
+### 4. Развёртывание через Portainer
+
+Portainer разворачивает стек тремя способами, и от выбора зависит, где
+собираются образы.
+
+**Реестр + Web editor (рекомендуется).** Собираете образы у себя, пушите в
+реестр, а в панели работаете только с готовыми тегами — на хосте ничего не
+собирается, деплой быстрый и повторяемый.
+
+```bash
+export APP_IMAGE=registry.example.ru/wellness-shop-app:1.0.0
+export NGINX_IMAGE=registry.example.ru/wellness-shop-nginx:1.0.0
+
+docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
+docker push "$APP_IMAGE"
+docker push "$NGINX_IMAGE"
+```
+
+Дальше в Portainer: **Stacks → Add stack → Web editor**, вставить содержимое
+`docker-compose.prod.yml`, ниже в **Environment variables** добавить пары из
+`.env.production.example` (включая `APP_IMAGE` и `NGINX_IMAGE`), **Deploy the
+stack**. Если реестр приватный — сначала **Registries** и учётка для него.
+
+**Repository.** Portainer клонирует репозиторий на хост и может собрать образы
+сам: указать URL, ветку и в *Compose path* — `docker-compose.prod.yml`, а в
+дополнительных путях `docker-compose.build.yml`. Тогда реестр не нужен, но
+сборка идёт на боевом хосте: `npm ci` и `composer install` съедают память и
+время при каждом обновлении стека.
+
+**Upload** ведёт себя как Web editor: контекста сборки нет, нужны готовые
+образы.
+
+Переменные с синтаксисом `${VAR:?...}` — обязательные: если не заполнить,
+Portainer откажет в деплое с явной ошибкой, а не поднимет стек с пустым
+паролем.
+
+### 5. После первого запуска
 
 Админка открывается по `/admin` под `SHOP_ADMIN_EMAIL` и
 `SHOP_ADMIN_PASSWORD`. Отдельной формы смены пароля администратора нет: он
@@ -111,6 +147,12 @@ docker push $APP_IMAGE && docker push $NGINX_IMAGE
 Миграции выполняются при каждом старте контейнера. Это удобно для одной
 реплики; если реплик будет несколько, вынесите `php artisan migrate --force` в
 отдельный шаг деплоя, чтобы они не стартовали параллельно.
+
+Стек рассчитан на обычный Docker, а не на Swarm. Если Portainer управляет
+Swarm-кластером, учтите: `build:` там не поддерживается совсем, `depends_on` с
+условием игнорируется, а `restart: unless-stopped` нужно заменить на
+`deploy.restart_policy`. Порядок старта при этом не пострадает — entrypoint сам
+ждёт базу в цикле, — но образы придётся брать только из реестра.
 
 ## Запуск без Docker
 
