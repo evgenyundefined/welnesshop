@@ -19,13 +19,13 @@ class SiteContentAdminTest extends TestCase
             'title' => '  Доставка и оплата  ',
             'body' => '## Доставка',
             'position' => 2,
-            'is_published' => true,
+            'visibility' => 'published',
         ])
             ->assertCreated()
             ->assertJsonPath('data.title', 'Доставка и оплата')
             ->assertJsonPath('data.slug', 'dostavka-i-oplata')
             ->assertJsonPath('data.position', 2)
-            ->assertJsonPath('data.is_published', true);
+            ->assertJsonPath('data.visibility', 'published');
 
         $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.pages.0.slug', 'dostavka-i-oplata');
     }
@@ -51,14 +51,68 @@ class SiteContentAdminTest extends TestCase
             'title' => 'Обучение и материалы',
             'slug' => 'obuchenie',
             'body' => 'Новый текст',
-            'is_published' => false,
+            'visibility' => 'draft',
         ])
             ->assertOk()
             ->assertJsonPath('data.title', 'Обучение и материалы')
-            ->assertJsonPath('data.is_published', false);
+            ->assertJsonPath('data.visibility', 'draft');
 
         $this->getJson(route('api.site'))->assertOk()->assertJsonCount(0, 'data.pages');
         $this->getJson(route('api.pages.show', ['page' => 'obuchenie']))->assertNotFound();
+    }
+
+    public function test_an_admin_creates_a_page_that_only_opens_by_its_address(): void
+    {
+        $this->signInAdmin();
+
+        $this->postJson(route('admin.api.pages.store'), [
+            'title' => 'Оптовым покупателям',
+            'body' => '<p>Условия</p>',
+            'visibility' => 'unlisted',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.slug', 'optovym-pokupatelyam')
+            ->assertJsonPath('data.visibility', 'unlisted');
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonCount(0, 'data.pages');
+
+        $this->getJson(route('api.pages.show', ['page' => 'optovym-pokupatelyam']))
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Оптовым покупателям');
+    }
+
+    public function test_a_hidden_page_stays_visible_to_the_admin_who_has_to_manage_it(): void
+    {
+        $this->signInAdmin();
+        $unlisted = Page::factory()->unlisted()->create(['title' => 'Оптовым покупателям', 'position' => 1]);
+        Page::factory()->draft()->create(['title' => 'Черновик', 'position' => 2]);
+
+        $this->getJson(route('admin.api.pages.index'))
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.visibility', 'unlisted')
+            ->assertJsonPath('data.1.visibility', 'draft');
+
+        $this->getJson(route('admin.api.pages.show', $unlisted))
+            ->assertOk()
+            ->assertJsonPath('data.visibility', 'unlisted');
+    }
+
+    public function test_the_visibility_has_to_be_one_of_the_three_states(): void
+    {
+        $this->signInAdmin();
+
+        foreach ([[], ['visibility' => ''], ['visibility' => 'hidden'], ['visibility' => true]] as $attempt) {
+            $this->postJson(route('admin.api.pages.store'), [
+                'title' => 'Страница',
+                'body' => 'Текст',
+                ...$attempt,
+            ])
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('visibility');
+        }
+
+        $this->assertSame(0, Page::query()->count());
     }
 
     public function test_an_admin_deletes_a_page(): void

@@ -10,6 +10,7 @@ use App\Actions\Admin\Site\SaveSiteSettings;
 use App\Actions\Site\ListFooterProducts;
 use App\Actions\Site\ListPages;
 use App\Actions\Site\LoadSiteSettings;
+use App\Enums\PageVisibility;
 use App\Enums\ProductStatus;
 use App\Models\Page;
 use App\Models\Product;
@@ -43,12 +44,12 @@ class SiteContentActionsTest extends TestCase
     {
         $save = $this->app->make(SavePage::class);
 
-        $created = $save(['slug' => 'dostavka', 'title' => 'Доставка', 'body' => 'Текст', 'position' => 1, 'is_published' => true]);
-        $updated = $save(['slug' => 'dostavka', 'title' => 'Доставка и оплата', 'body' => 'Другой текст', 'position' => 2, 'is_published' => false], $created);
+        $created = $save(['slug' => 'dostavka', 'title' => 'Доставка', 'body' => 'Текст', 'position' => 1, 'visibility' => PageVisibility::Published]);
+        $updated = $save(['slug' => 'dostavka', 'title' => 'Доставка и оплата', 'body' => 'Другой текст', 'position' => 2, 'visibility' => PageVisibility::Draft], $created);
 
         $this->assertSame($created->id, $updated->id);
         $this->assertSame(1, Page::query()->count());
-        $this->assertDatabaseHas('pages', ['id' => $created->id, 'title' => 'Доставка и оплата', 'is_published' => false]);
+        $this->assertDatabaseHas('pages', ['id' => $created->id, 'title' => 'Доставка и оплата', 'visibility' => 'draft']);
     }
 
     public function test_deleting_a_page_removes_it(): void

@@ -6,6 +6,7 @@ use App\Actions\Admin\Content\PurgeOrphanedContentImages;
 use App\Actions\Admin\Pages\DeletePage;
 use App\Actions\Admin\Pages\SavePage;
 use App\Actions\Admin\Site\SaveSiteSettings;
+use App\Enums\PageVisibility;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Storage;
@@ -87,7 +88,7 @@ class PurgeOrphanedContentImagesTest extends TestCase
             'title' => 'Новая',
             'body' => "<img src=\"{$url}\">",
             'position' => 1,
-            'is_published' => true,
+            'visibility' => PageVisibility::Published,
         ]);
 
         Storage::assertExists('content/fresh.jpg');

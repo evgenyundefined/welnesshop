@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PageVisibility;
 use Database\Factories\PageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['slug', 'title', 'body', 'position', 'is_published'])]
+#[Fillable(['slug', 'title', 'body', 'position', 'visibility'])]
 #[RouteKey('slug')]
 class Page extends Model
 {
@@ -18,9 +19,9 @@ class Page extends Model
     use HasFactory;
 
     #[Scope]
-    protected function published(Builder $query): void
+    protected function listedInMenus(Builder $query): void
     {
-        $query->where('is_published', true);
+        $query->where('visibility', PageVisibility::Published);
     }
 
     /** @return array<string, string> */
@@ -28,7 +29,7 @@ class Page extends Model
     {
         return [
             'position' => 'integer',
-            'is_published' => 'boolean',
+            'visibility' => PageVisibility::class,
         ];
     }
 }

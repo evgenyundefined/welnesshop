@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\PageVisibility;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -22,7 +23,7 @@ class SavePageRequest extends FormRequest
             ],
             'body' => ['required', 'string', 'max:200000'],
             'position' => ['nullable', 'integer', 'min:0', 'max:65535'],
-            'is_published' => ['nullable', 'boolean'],
+            'visibility' => ['required', Rule::enum(PageVisibility::class)],
         ];
     }
 
@@ -32,6 +33,7 @@ class SavePageRequest extends FormRequest
         return [
             'slug.regex' => 'Slug может содержать только строчные латинские буквы, цифры и дефис.',
             'slug.required' => 'Не удалось собрать slug из заголовка — укажите его вручную.',
+            'visibility.required' => 'Выберите, где страница показывается.',
         ];
     }
 
@@ -50,7 +52,7 @@ class SavePageRequest extends FormRequest
             'slug' => $this->string('slug')->toString(),
             'body' => trim($this->string('body')->toString()),
             'position' => $this->filled('position') ? $this->integer('position') : 0,
-            'is_published' => $this->boolean('is_published'),
+            'visibility' => $this->enum('visibility', PageVisibility::class),
         ];
     }
 }

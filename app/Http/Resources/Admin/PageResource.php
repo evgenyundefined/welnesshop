@@ -22,7 +22,7 @@ class PageResource extends JsonResource
             'title' => $this->resource->title,
             'body' => $this->resource->body,
             'position' => $this->resource->position,
-            'is_published' => $this->resource->is_published,
+            'visibility' => $this->resource->visibility,
         ];
     }
 

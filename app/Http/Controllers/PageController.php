@@ -10,7 +10,7 @@ class PageController extends Controller
 {
     public function __invoke(Page $page): PageResource
     {
-        if (! $page->is_published) {
+        if (! $page->visibility->isReachableByLink()) {
             throw new NotFoundHttpException;
         }
 

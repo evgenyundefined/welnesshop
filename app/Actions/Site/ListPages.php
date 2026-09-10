@@ -13,7 +13,7 @@ class ListPages
     public function __invoke(): Collection
     {
         return Page::query()
-            ->published()
+            ->listedInMenus()
             ->orderBy('position')
             ->orderBy('title')
             ->get(['id', 'slug', 'title']);

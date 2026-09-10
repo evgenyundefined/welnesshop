@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Admin\Site\SaveBannerImage;
 use App\Actions\Admin\Site\SaveSiteSettings;
+use App\Enums\PageVisibility;
 use App\Models\Category;
 use App\Models\Page;
 use Illuminate\Http\UploadedFile;
@@ -116,6 +117,37 @@ class SiteContentTest extends TestCase
 
         $this->getJson(route('api.pages.show', $draft))->assertNotFound();
         $this->getJson(route('api.pages.show', ['page' => 'net-takoy']))->assertNotFound();
+    }
+
+    public function test_an_unlisted_page_opens_by_its_address_but_is_linked_nowhere(): void
+    {
+        $unlisted = Page::factory()->unlisted()->create(['title' => 'Только по ссылке']);
+        $listed = Page::factory()->create(['title' => 'Доставка и оплата']);
+
+        $this->getJson(route('api.pages.show', $unlisted))
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Только по ссылке');
+
+        $this->getJson(route('api.site'))
+            ->assertOk()
+            ->assertJsonCount(1, 'data.pages')
+            ->assertJsonPath('data.pages.0.slug', $listed->slug);
+    }
+
+    public function test_hiding_a_page_takes_it_out_of_the_menu_without_breaking_its_address(): void
+    {
+        $page = Page::factory()->create();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonCount(1, 'data.pages');
+
+        $page->forceFill(['visibility' => PageVisibility::Unlisted])->save();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonCount(0, 'data.pages');
+        $this->getJson(route('api.pages.show', $page))->assertOk();
+
+        $page->forceFill(['visibility' => PageVisibility::Draft])->save();
+
+        $this->getJson(route('api.pages.show', $page))->assertNotFound();
     }
 
     public function test_the_site_payload_is_open_to_guests(): void

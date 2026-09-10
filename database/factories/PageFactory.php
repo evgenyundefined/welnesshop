@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PageVisibility;
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -20,12 +21,17 @@ class PageFactory extends Factory
             'title' => $title,
             'body' => "<h2>{$title}</h2><p>".fake()->paragraph().'</p>',
             'position' => fake()->numberBetween(0, 100),
-            'is_published' => true,
+            'visibility' => PageVisibility::Published,
         ];
     }
 
     public function draft(): static
     {
-        return $this->state(['is_published' => false]);
+        return $this->state(['visibility' => PageVisibility::Draft]);
+    }
+
+    public function unlisted(): static
+    {
+        return $this->state(['visibility' => PageVisibility::Unlisted]);
     }
 }

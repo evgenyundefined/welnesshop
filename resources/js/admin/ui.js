@@ -46,3 +46,15 @@ export const productStatuses = {
     published: 'Опубликован',
     archived: 'В архиве',
 }
+
+export const pageVisibilities = {
+    published: 'В меню и по ссылке',
+    unlisted: 'Только по ссылке',
+    draft: 'Черновик',
+}
+
+export const pageVisibilityBadges = {
+    published: 'bg-ink-100 text-ink-600',
+    unlisted: 'bg-gold-100 text-gold-800',
+    draft: 'bg-red-50 text-red-700',
+}

@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api, { fieldErrorsFrom, messageFrom } from '../api'
 import Modal from '../components/Modal.vue'
 import Pagination from '../components/Pagination.vue'
 import RichEditor from '../components/RichEditor.vue'
-import { card, dangerButton, ghostButton, input, primaryButton, td, th } from '../ui'
+import { card, dangerButton, ghostButton, input, pageVisibilities, pageVisibilityBadges, primaryButton, td, th } from '../ui'
 
 const pages = ref([])
 const meta = ref({ current_page: 1, last_page: 1, total: 0 })
@@ -13,7 +13,8 @@ const page = ref(1)
 const error = ref('')
 
 const editing = ref(null)
-const form = reactive({ title: '', slug: '', body: '', position: 0, is_published: true })
+const pageUrl = computed(() => `${window.location.origin}/pages/${form.slug}`)
+const form = reactive({ title: '', slug: '', body: '', position: 0, visibility: 'published' })
 const formErrors = ref({})
 const formMessage = ref('')
 const saving = ref(false)
@@ -40,7 +41,7 @@ onMounted(load)
 
 function openCreate() {
     editing.value = 'new'
-    Object.assign(form, { title: '', slug: '', body: '', position: 0, is_published: true })
+    Object.assign(form, { title: '', slug: '', body: '', position: 0, visibility: 'published' })
     formErrors.value = {}
     formMessage.value = ''
 }
@@ -54,7 +55,7 @@ async function openEdit(row) {
         slug: data.data.slug,
         body: data.data.body,
         position: data.data.position,
-        is_published: data.data.is_published,
+        visibility: data.data.visibility,
     })
     formErrors.value = {}
     formMessage.value = ''
@@ -131,11 +132,8 @@ async function remove(row) {
                         <td :class="td" class="font-mono text-xs text-ink-500">{{ row.slug }}</td>
                         <td :class="td" class="tabular-nums">{{ row.position }}</td>
                         <td :class="td">
-                            <span
-                                class="rounded-full px-2 py-1 text-xs font-medium"
-                                :class="row.is_published ? 'bg-ink-100 text-ink-600' : 'bg-red-50 text-red-700'"
-                            >
-                                {{ row.is_published ? 'Опубликована' : 'Черновик' }}
+                            <span class="rounded-full px-2 py-1 text-xs font-medium" :class="pageVisibilityBadges[row.visibility]">
+                                {{ pageVisibilities[row.visibility] }}
                             </span>
                         </td>
                         <td :class="td" class="text-right whitespace-nowrap">
@@ -178,11 +176,25 @@ async function remove(row) {
                         <input id="position" v-model="form.position" type="number" min="0" :class="input" class="w-28">
                     </div>
 
-                    <label class="flex items-center gap-2 pb-2 text-sm">
-                        <input v-model="form.is_published" type="checkbox" class="size-4 accent-gold-500">
-                        Опубликована
-                    </label>
+                    <div class="min-w-56 flex-1">
+                        <label for="visibility" class="mb-1.5 block text-sm text-ink-500">Где показывать</label>
+                        <select id="visibility" v-model="form.visibility" :class="input">
+                            <option v-for="(label, value) in pageVisibilities" :key="value" :value="value">{{ label }}</option>
+                        </select>
+                        <p v-if="formErrors.visibility" class="mt-1 text-sm text-red-700">{{ formErrors.visibility }}</p>
+                    </div>
                 </div>
+
+                <p v-if="form.visibility === 'unlisted'" class="text-sm text-ink-500">
+                    <template v-if="form.slug">
+                        Ссылки на страницу нигде не будет, открыть её можно только по адресу
+                        <a :href="pageUrl" target="_blank" class="text-gold-700 underline">{{ pageUrl }}</a>.
+                    </template>
+                    <template v-else>
+                        Ссылки на страницу нигде не будет. Адрес соберётся из заголовка и появится здесь
+                        после сохранения.
+                    </template>
+                </p>
 
                 <p v-if="formMessage" class="text-sm text-red-700">{{ formMessage }}</p>
 

@@ -60,7 +60,7 @@ class ContentImageTest extends TestCase
             'slug' => 'obuchenie',
             'body' => "<img src=\"{$kept}\">",
             'position' => 1,
-            'is_published' => true,
+            'visibility' => 'published',
         ])->assertOk();
 
         Storage::assertMissing($this->pathOf($removed));
@@ -110,7 +110,7 @@ class ContentImageTest extends TestCase
             'title' => $title,
             'body' => $body,
             'position' => 1,
-            'is_published' => true,
+            'visibility' => 'published',
         ])->assertCreated()->json('data.id');
 
         return Page::query()->findOrFail($id);
