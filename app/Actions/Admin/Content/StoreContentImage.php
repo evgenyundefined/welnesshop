@@ -11,8 +11,8 @@ class StoreContentImage
 
     /**
      * Pictures pasted into a page are kept apart from product galleries: they
-     * belong to the text, not to a product, and nothing cleans them up when a
-     * product goes away.
+     * belong to the text, not to a product. PurgeOrphanedContentImages drops
+     * them once no saved text refers to them any more.
      */
     public function __invoke(UploadedFile $file): string
     {

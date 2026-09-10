@@ -18,10 +18,8 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
-        "@tiptap/extension-image": "^3.31.3",
-        "@tiptap/starter-kit": "^3.31.3",
-        "@tiptap/vue-3": "^3.31.3",
         "axios": "^1.20.0",
+        "tinymce": "^6.8.6",
         "vue": "^3.5.42",
         "vue-router": "^5.3.0"
     }

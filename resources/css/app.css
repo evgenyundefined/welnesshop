@@ -38,7 +38,7 @@
 }
 
 /*
- * Page bodies are admin-authored markdown, so the elements they produce are
+ * Page bodies are admin-authored HTML, so the elements they produce are
  * styled once here rather than annotated with classes at render time.
  */
 @layer components {
@@ -74,18 +74,40 @@
         @apply font-semibold text-ink-900;
     }
 
-    /* A blockquote is the only box markdown offers, so it carries the callout:
-       "> текст" in the editor renders as a framed notice. */
-    .prose-page blockquote {
+    .prose-page blockquote,
+    .prose-page .callout {
         @apply mb-3 rounded-xl border border-gold-300 bg-gold-50 px-5 py-4;
     }
 
-    .prose-page blockquote p {
+    .prose-page blockquote p,
+    .prose-page .callout p {
         @apply mb-2 text-sm text-ink-800;
     }
 
-    .prose-page blockquote > :last-child {
+    .prose-page blockquote > :last-child,
+    .prose-page .callout > :last-child {
         @apply mb-0;
+    }
+
+    .prose-page img {
+        @apply mb-3 max-w-full rounded-xl;
+    }
+
+    .prose-page table {
+        @apply mb-3 w-full border-collapse text-sm;
+    }
+
+    .prose-page th,
+    .prose-page td {
+        @apply border border-ink-200 px-3 py-2 text-left align-top text-ink-700;
+    }
+
+    .prose-page th {
+        @apply bg-ink-50 font-semibold text-ink-900;
+    }
+
+    .prose-page hr {
+        @apply my-6 border-ink-200;
     }
 
     .prose-page > :last-child {
