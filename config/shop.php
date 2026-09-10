@@ -22,6 +22,8 @@ return [
         'max_kilobytes' => (int) env('SHOP_MAX_IMAGE_KILOBYTES', 5120),
     ],
 
+    'footer_products' => (int) env('SHOP_FOOTER_PRODUCTS', 10),
+
     'cart_session_key' => 'cart_token',
 
     'order_number_prefix' => env('SHOP_ORDER_NUMBER_PREFIX', 'WLN'),

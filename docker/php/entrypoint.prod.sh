@@ -33,8 +33,9 @@ if [ ! -w storage/app/public ]; then
     exit 1
 fi
 
-say "seeding the administrator"
+say "seeding the administrator and the starting content"
 php artisan db:seed --class=AdminSeeder --force
+php artisan db:seed --class=SiteContentSeeder --force
 
 if [ "${SEED_CATALOG}" = "true" ]; then
     say "seeding the demo catalog"

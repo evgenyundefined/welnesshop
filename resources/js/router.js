@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { session } from './stores/session'
 import CatalogPage from './pages/CatalogPage.vue'
 import ProductPage from './pages/ProductPage.vue'
+import PagePage from './pages/PagePage.vue'
 import LoginPage from './pages/LoginPage.vue'
 import RegisterPage from './pages/RegisterPage.vue'
 import CartPage from './pages/CartPage.vue'
@@ -15,6 +16,7 @@ const router = createRouter({
     routes: [
         { path: '/', name: 'catalog', component: CatalogPage },
         { path: '/products/:slug', name: 'product', component: ProductPage, props: true },
+        { path: '/pages/:slug', name: 'page', component: PagePage, props: true },
         { path: '/login', name: 'login', component: LoginPage, meta: { guestOnly: true } },
         { path: '/register', name: 'register', component: RegisterPage, meta: { guestOnly: true } },
         { path: '/cart', name: 'cart', component: CartPage },

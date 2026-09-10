@@ -5,8 +5,10 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StatisticsController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,15 @@ Route::middleware(Guard::Admin->middleware())->group(function (): void {
     Route::get('me', [AuthController::class, 'me'])->name('me');
 
     Route::get('statistics', StatisticsController::class)->name('statistics');
+
+    Route::apiResource('pages', PageController::class)->parameters(['pages' => 'page:id']);
+
+    Route::prefix('site')->name('site.')->group(function (): void {
+        Route::get('/', [SiteController::class, 'show'])->name('show');
+        Route::put('/', [SiteController::class, 'update'])->name('update');
+        Route::post('banner', [SiteController::class, 'storeBanner'])->name('banner.store');
+        Route::delete('banner', [SiteController::class, 'destroyBanner'])->name('banner.destroy');
+    });
 
     Route::apiResource('categories', CategoryController::class)->parameters(['categories' => 'category:id']);
     Route::put('categories/{category:id}/position', [CategoryController::class, 'move'])->name('categories.move');

@@ -36,3 +36,45 @@
     --color-gold-800: #5f4a24;
     --color-gold-900: #3d301a;
 }
+
+/*
+ * Page bodies are admin-authored markdown, so the elements they produce are
+ * styled once here rather than annotated with classes at render time.
+ */
+@layer components {
+    .prose-page h2 {
+        @apply mt-6 mb-2 text-lg font-bold tracking-tight;
+    }
+
+    .prose-page h2:first-child {
+        @apply mt-0;
+    }
+
+    .prose-page h3 {
+        @apply mt-5 mb-2 font-semibold;
+    }
+
+    .prose-page p {
+        @apply mb-3 leading-relaxed text-ink-700;
+    }
+
+    .prose-page ul {
+        @apply mb-3 list-disc space-y-1 pl-5 text-ink-700;
+    }
+
+    .prose-page ol {
+        @apply mb-3 list-decimal space-y-1 pl-5 text-ink-700;
+    }
+
+    .prose-page a {
+        @apply text-gold-700 underline;
+    }
+
+    .prose-page strong {
+        @apply font-semibold text-ink-900;
+    }
+
+    .prose-page > :last-child {
+        @apply mb-0;
+    }
+}

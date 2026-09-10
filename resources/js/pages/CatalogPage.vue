@@ -1,14 +1,31 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../api'
+import { site } from '../stores/site'
 import ProductCard from '../components/ProductCard.vue'
+
+const route = useRoute()
 
 const categories = ref([])
 const products = ref([])
 const meta = ref({ current_page: 1, last_page: 1, total: 0 })
 const loading = ref(true)
 
-const filters = reactive({ category: null, search: '', sort: 'name', in_stock: false, page: 1 })
+// The category comes off the query string so a footer link lands on a filtered
+// catalog rather than the whole of it.
+const filters = reactive({
+    category: route.query.category ?? null,
+    search: '',
+    sort: 'name',
+    in_stock: false,
+    page: 1,
+})
+
+watch(() => route.query.category, (category) => {
+    filters.category = category ?? null
+    filters.page = 1
+})
 
 const inputClass =
     'w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500'
@@ -57,6 +74,16 @@ onMounted(async () => {
 </script>
 
 <template>
+    <section
+        v-if="site.state.banner"
+        class="mb-8 overflow-hidden rounded-2xl bg-ink-950"
+    >
+        <RouterLink v-if="site.state.banner.button_url" :to="site.state.banner.button_url" class="block">
+            <img :src="site.state.banner.image_url" :alt="site.state.banner.title ?? ''" class="w-full">
+        </RouterLink>
+        <img v-else :src="site.state.banner.image_url" :alt="site.state.banner.title ?? ''" class="w-full">
+    </section>
+
     <h1 class="mb-6 text-2xl font-bold tracking-tight">Каталог</h1>
 
     <div class="grid gap-6 lg:grid-cols-[240px_1fr]">
@@ -128,4 +155,16 @@ onMounted(async () => {
             </div>
         </section>
     </div>
+
+    <section v-if="site.state.promo" class="mt-12 space-y-4">
+        <h2 v-if="site.state.promo.heading" class="text-xl font-bold tracking-tight">
+            {{ site.state.promo.heading }}
+        </h2>
+
+        <div
+            v-if="site.state.promo.body_html"
+            class="prose-page rounded-xl border border-ink-200 bg-white p-6"
+            v-html="site.state.promo.body_html"
+        ></div>
+    </section>
 </template>

@@ -3,6 +3,8 @@ import { session } from './stores/session'
 import LoginPage from './pages/LoginPage.vue'
 import CategoriesPage from './pages/CategoriesPage.vue'
 import StatisticsPage from './pages/StatisticsPage.vue'
+import PagesPage from './pages/PagesPage.vue'
+import SitePage from './pages/SitePage.vue'
 import ProductsPage from './pages/ProductsPage.vue'
 import ProductFormPage from './pages/ProductFormPage.vue'
 import CustomersPage from './pages/CustomersPage.vue'
@@ -22,6 +24,8 @@ const router = createRouter({
         { path: '/products/new', name: 'admin.products.create', component: ProductFormPage },
         { path: '/products/:id', name: 'admin.products.edit', component: ProductFormPage, props: true },
         { path: '/customers', name: 'admin.customers', component: CustomersPage },
+        { path: '/pages', name: 'admin.pages', component: PagesPage },
+        { path: '/site', name: 'admin.site', component: SitePage },
         { path: '/orders', name: 'admin.orders', component: OrdersPage },
         { path: '/orders/new', name: 'admin.orders.create', component: OrderFormPage },
         { path: '/orders/:id', name: 'admin.orders.show', component: OrderPage, props: true },

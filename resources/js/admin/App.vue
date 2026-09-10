@@ -12,6 +12,8 @@ const links = [
     { name: 'admin.products', label: 'Товары' },
     { name: 'admin.categories', label: 'Категории' },
     { name: 'admin.customers', label: 'Покупатели' },
+    { name: 'admin.pages', label: 'Страницы' },
+    { name: 'admin.site', label: 'Сайт' },
 ]
 
 async function logout() {
@@ -24,7 +26,7 @@ async function logout() {
     <div v-if="admin" class="flex min-h-full">
         <aside class="flex w-56 shrink-0 flex-col bg-ink-950 text-white">
             <div class="px-5 py-4">
-                <p class="font-bold tracking-tight text-gold-300">Wellness Store</p>
+                <p class="font-bold tracking-tight text-gold-300">agelesscode</p>
                 <p class="text-xs text-ink-400">админка</p>
             </div>
 

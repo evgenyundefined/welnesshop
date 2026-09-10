@@ -6,7 +6,12 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\SiteController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('site', SiteController::class)->name('site');
+Route::get('pages/{page}', PageController::class)->name('pages.show');
 
 Route::get('categories', [CatalogController::class, 'categories'])->name('categories');
 Route::get('products', [CatalogController::class, 'products'])->name('products');

@@ -35,7 +35,7 @@ async function submit() {
         <form :class="card" class="w-full max-w-sm space-y-4 p-6" @submit.prevent="submit">
             <div>
                 <h1 class="text-xl font-bold tracking-tight">Админка</h1>
-                <p class="text-sm text-gold-700">Wellness Store</p>
+                <p class="text-sm text-gold-700">agelesscode</p>
             </div>
 
             <div>
