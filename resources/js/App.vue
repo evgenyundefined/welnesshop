@@ -23,7 +23,7 @@ async function logout() {
 
 <template>
     <div class="flex min-h-full flex-col">
-        <header class="sticky top-0 z-10 bg-ink-950 text-white">
+        <header class="sticky top-0 z-10 border-b border-ink-700 bg-ink-950 text-white">
             <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
                 <RouterLink :to="{ name: 'catalog' }" class="text-lg font-bold tracking-tight text-gold-300">
                     agelesscode
@@ -92,7 +92,7 @@ async function logout() {
             <RouterView />
         </main>
 
-        <footer class="mt-10 bg-ink-950 text-sm text-ink-400">
+        <footer class="mt-10 border-t border-ink-700 bg-ink-950 text-sm text-ink-400">
             <div class="mx-auto max-w-6xl px-5 py-10">
                 <p class="mb-8 text-lg font-bold tracking-tight text-gold-300">agelesscode</p>
 

@@ -70,44 +70,44 @@ class SiteContentTest extends TestCase
         $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.banner', null);
     }
 
-    public function test_the_promo_block_arrives_as_rendered_markdown(): void
+    public function test_the_promo_block_arrives_as_the_html_the_editor_produced(): void
     {
-        ($this->app->make(SaveSiteSettings::class))([
-            'promo_heading' => 'О компании',
-            'promo_body' => "## Почему мы\n\n- **Качество**\n- Поддержка",
-        ]);
+        $html = '<h2>Почему мы</h2><ul><li><strong>Качество</strong></li></ul>';
+
+        ($this->app->make(SaveSiteSettings::class))(['promo_heading' => 'О компании', 'promo_body' => $html]);
 
         $this->getJson(route('api.site'))
             ->assertOk()
             ->assertJsonPath('data.promo.heading', 'О компании')
-            ->assertJsonPath('data.promo.body_html', fn (string $html): bool => str_contains($html, '<h2>Почему мы</h2>')
-                && str_contains($html, '<strong>Качество</strong>'));
+            ->assertJsonPath('data.promo.body_html', $html);
     }
 
-    public function test_a_page_is_served_as_rendered_markdown(): void
+    public function test_a_page_is_served_as_the_html_the_editor_produced(): void
     {
-        $page = Page::factory()->create([
-            'title' => 'Доставка и оплата',
-            'body' => "## Доставка\n\nКурьером или транспортной компанией.",
-        ]);
+        $html = '<h2>Доставка</h2><p>Курьером или транспортной компанией.</p>';
+
+        $page = Page::factory()->create(['title' => 'Доставка и оплата', 'body' => $html]);
 
         $this->getJson(route('api.pages.show', $page))
             ->assertOk()
             ->assertJsonPath('data.title', 'Доставка и оплата')
             ->assertJsonPath('data.slug', $page->slug)
-            ->assertJsonPath('data.body_html', fn (string $html): bool => str_contains($html, '<h2>Доставка</h2>'));
+            ->assertJsonPath('data.body_html', $html);
     }
 
-    public function test_a_page_cannot_smuggle_a_script_into_the_storefront(): void
+    /**
+     * Page bodies are stored and served exactly as written, by decision: the
+     * editor is a visual one and anyone with admin access is trusted with
+     * arbitrary markup. Anyone reading this test should know that an
+     * administrator can therefore put scripts and embeds on the storefront.
+     */
+    public function test_a_page_body_reaches_the_storefront_untouched(): void
     {
-        $page = Page::factory()->create([
-            'body' => "Текст\n\n<script>alert('xss')</script>\n\n[ссылка](javascript:alert(1))",
-        ]);
+        $html = '<table><tr><td>Ячейка</td></tr></table><iframe src="https://example.ru"></iframe>';
 
-        $html = $this->getJson(route('api.pages.show', $page))->assertOk()->json('data.body_html');
+        $page = Page::factory()->create(['body' => $html]);
 
-        $this->assertStringNotContainsString('<script', $html);
-        $this->assertStringNotContainsString('javascript:', $html);
+        $this->getJson(route('api.pages.show', $page))->assertOk()->assertJsonPath('data.body_html', $html);
     }
 
     public function test_an_unpublished_or_unknown_page_is_a_not_found(): void

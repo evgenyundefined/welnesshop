@@ -21,6 +21,7 @@ class StatisticsResource extends JsonResource
             'revenue' => $this->resource['revenue'],
             'customers' => $this->resource['customers'],
             'daily' => $this->resource['daily'],
+            'views_daily' => $this->resource['views_daily'],
             'top_products' => $this->resource['top_products']
                 ->map(static fn (OrderItem $item): array => [
                     'name' => $item->product_name,

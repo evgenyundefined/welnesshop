@@ -74,6 +74,20 @@
         @apply font-semibold text-ink-900;
     }
 
+    /* A blockquote is the only box markdown offers, so it carries the callout:
+       "> текст" in the editor renders as a framed notice. */
+    .prose-page blockquote {
+        @apply mb-3 rounded-xl border border-gold-300 bg-gold-50 px-5 py-4;
+    }
+
+    .prose-page blockquote p {
+        @apply mb-2 text-sm text-ink-800;
+    }
+
+    .prose-page blockquote > :last-child {
+        @apply mb-0;
+    }
+
     .prose-page > :last-child {
         @apply mb-0;
     }

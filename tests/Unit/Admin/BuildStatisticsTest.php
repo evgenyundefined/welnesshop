@@ -3,6 +3,7 @@
 namespace Tests\Unit\Admin;
 
 use App\Actions\Admin\Statistics\BuildStatistics;
+use App\Actions\Catalog\RecordProductView;
 use App\Enums\OrderStatus;
 use App\Enums\StatisticsPeriod;
 use App\Models\Customer;
@@ -145,6 +146,51 @@ class BuildStatisticsTest extends TestCase
 
         $this->assertCount(1, $top);
         $this->assertSame(5, (int) $top->first()->quantity);
+    }
+
+    public function test_the_view_series_sums_every_product_for_each_day(): void
+    {
+        $record = $this->app->make(RecordProductView::class);
+        $first = $this->makeProduct();
+        $second = $this->makeProduct();
+
+        $record($first);
+        $record($first);
+        $record($second);
+
+        $yesterday = $this->makeProduct();
+        $this->travel(-1)->days();
+        $record($yesterday);
+        $this->travelBack();
+
+        $series = collect($this->build(StatisticsPeriod::Week)['views_daily']);
+
+        $this->assertCount(7, $series);
+        $this->assertSame(3, $series->firstWhere('date', now()->toDateString())['views']);
+        $this->assertSame(1, $series->firstWhere('date', now()->subDay()->toDateString())['views']);
+    }
+
+    public function test_the_view_series_covers_days_nobody_looked(): void
+    {
+        $series = $this->build(StatisticsPeriod::Week)['views_daily'];
+
+        $this->assertCount(7, $series);
+        $this->assertSame([0], array_unique(array_column($series, 'views')));
+    }
+
+    public function test_a_period_leaves_older_views_out(): void
+    {
+        $record = $this->app->make(RecordProductView::class);
+        $product = $this->makeProduct();
+
+        $this->travel(-40)->days();
+        $record($product);
+        $this->travelBack();
+
+        $record($product);
+
+        $this->assertSame(1, collect($this->build(StatisticsPeriod::Month)['views_daily'])->sum('views'));
+        $this->assertSame(2, collect($this->build(StatisticsPeriod::All)['views_daily'])->sum('views'));
     }
 
     public function test_most_viewed_ranks_by_the_lifetime_counter(): void

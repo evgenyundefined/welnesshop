@@ -18,7 +18,7 @@ class PageFactory extends Factory
         return [
             'slug' => Str::slug($title).'-'.Str::lower(Str::random(6)),
             'title' => $title,
-            'body' => "## {$title}\n\n".fake()->paragraph(),
+            'body' => "<h2>{$title}</h2><p>".fake()->paragraph().'</p>',
             'position' => fake()->numberBetween(0, 100),
             'is_published' => true,
         ];

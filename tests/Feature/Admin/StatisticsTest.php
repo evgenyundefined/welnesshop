@@ -96,6 +96,23 @@ class StatisticsTest extends TestCase
         $this->assertSame(3, $product->refresh()->views, 'repeat opens are not deduplicated');
     }
 
+    public function test_the_dashboard_carries_a_view_series_the_opens_move(): void
+    {
+        $product = $this->makeProduct();
+
+        $this->getJson(route('api.products.show', $product))->assertOk();
+        $this->getJson(route('api.products.show', $product))->assertOk();
+
+        $this->signInAdmin();
+
+        $series = $this->getJson(route('admin.api.statistics', ['period' => 'week']))
+            ->assertOk()
+            ->assertJsonCount(7, 'data.views_daily')
+            ->json('data.views_daily');
+
+        $this->assertSame(2, collect($series)->firstWhere('date', now()->toDateString())['views']);
+    }
+
     public function test_a_product_hidden_from_the_catalog_collects_no_views(): void
     {
         $draft = $this->makeProduct(['status' => ProductStatus::Draft]);
@@ -103,6 +120,7 @@ class StatisticsTest extends TestCase
         $this->getJson(route('api.products.show', $draft))->assertNotFound();
 
         $this->assertSame(0, $draft->refresh()->views);
+        $this->assertDatabaseCount('product_view_daily', 0);
     }
 
     public function test_the_listing_endpoint_does_not_count_as_a_view(): void

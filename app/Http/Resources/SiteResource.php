@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -32,10 +31,7 @@ class SiteResource extends JsonResource
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [
                 'heading' => $settings->promo_heading,
-                'body_html' => $settings->promo_body === null ? null : Str::markdown($settings->promo_body, [
-                    'html_input' => 'strip',
-                    'allow_unsafe_links' => false,
-                ]),
+                'body_html' => $settings->promo_body,
             ],
             'disclaimer' => $settings->disclaimer,
             'contacts' => [

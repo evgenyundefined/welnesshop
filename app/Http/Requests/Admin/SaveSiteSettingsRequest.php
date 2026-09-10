@@ -17,7 +17,7 @@ class SaveSiteSettingsRequest extends FormRequest
             'banner_button_label' => ['nullable', 'string', 'max:80'],
             'banner_button_url' => ['nullable', 'string', 'max:500'],
             'promo_heading' => ['nullable', 'string', 'max:255'],
-            'promo_body' => ['nullable', 'string', 'max:20000'],
+            'promo_body' => ['nullable', 'string', 'max:100000'],
             'disclaimer' => ['nullable', 'string', 'max:5000'],
             'contact_email' => ['nullable', 'string', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:32'],

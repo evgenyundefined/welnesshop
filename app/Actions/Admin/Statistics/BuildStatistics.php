@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ProductViewDaily;
 use Carbon\CarbonImmutable;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,6 +50,7 @@ class BuildStatistics
                 'blocked' => Customer::query()->whereNotNull('blocked_at')->count(),
             ],
             'daily' => $this->daily($since, $now),
+            'views_daily' => $this->viewsDaily($since, $now),
             'top_products' => $this->topProducts($since),
             'most_viewed' => $this->mostViewed(),
         ];
@@ -108,6 +110,40 @@ class BuildStatistics
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Views are counted per product per day, so the chart sums them across the
+     * catalog for each day of the period.
+     *
+     * @return list<array{date: string, views: int}>
+     */
+    private function viewsDaily(?CarbonImmutable $since, CarbonImmutable $now): array
+    {
+        $rows = ProductViewDaily::query()
+            ->when($since, static fn (Builder $query, CarbonImmutable $from) => $query
+                ->where('viewed_on', '>=', $from->toDateString()))
+            ->selectRaw('viewed_on as day')
+            ->selectRaw('SUM(views) as views')
+            ->groupBy('day')
+            ->get()
+            ->keyBy(static fn (ProductViewDaily $row): string => CarbonImmutable::parse($row->day)->toDateString());
+
+        $first = $since ?? $this->firstViewDay($now);
+
+        return collect(CarbonImmutable::parse($first)->toPeriod($now, '1 day'))
+            ->map(static fn (CarbonImmutable $day): array => [
+                'date' => $day->toDateString(),
+                'views' => (int) ($rows->get($day->toDateString())->views ?? 0),
+            ])
+            ->all();
+    }
+
+    private function firstViewDay(CarbonImmutable $now): CarbonImmutable
+    {
+        $earliest = ProductViewDaily::query()->min('viewed_on');
+
+        return $earliest === null ? $now->startOfDay() : CarbonImmutable::parse($earliest)->startOfDay();
     }
 
     private function firstOrderDay(CarbonImmutable $now): CarbonImmutable

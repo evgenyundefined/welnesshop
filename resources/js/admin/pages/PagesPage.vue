@@ -3,6 +3,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import api, { fieldErrorsFrom, messageFrom } from '../api'
 import Modal from '../components/Modal.vue'
 import Pagination from '../components/Pagination.vue'
+import RichEditor from '../components/RichEditor.vue'
 import { card, dangerButton, ghostButton, input, primaryButton, td, th } from '../ui'
 
 const pages = ref([])
@@ -166,11 +167,8 @@ async function remove(row) {
                 </div>
 
                 <div>
-                    <label for="body" class="mb-1.5 block text-sm text-ink-500">Текст</label>
-                    <textarea id="body" v-model="form.body" rows="14" required :class="input" class="font-mono text-xs"></textarea>
-                    <p class="mt-1 text-xs text-ink-400">
-                        Markdown: <code>## Заголовок</code>, <code>**жирный**</code>, списки через <code>-</code>.
-                    </p>
+                    <span class="mb-1.5 block text-sm text-ink-500">Текст</span>
+                    <RichEditor v-model="form.body" />
                     <p v-if="formErrors.body" class="mt-1 text-sm text-red-700">{{ formErrors.body }}</p>
                 </div>
 

@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import api, { fieldErrorsFrom, messageFrom } from '../api'
 import { card, dangerButton, ghostButton, input, primaryButton } from '../ui'
+import RichEditor from '../components/RichEditor.vue'
 
 const form = reactive({
     banner_enabled: false,
@@ -139,9 +140,8 @@ async function removeBanner() {
             </div>
 
             <div>
-                <label for="promo_body" class="mb-1.5 block text-sm text-ink-500">Текст</label>
-                <textarea id="promo_body" v-model="form.promo_body" rows="10" :class="input" class="font-mono text-xs"></textarea>
-                <p class="mt-1 text-xs text-ink-400">Markdown, как на страницах.</p>
+                <span class="mb-1.5 block text-sm text-ink-500">Текст</span>
+                <RichEditor v-model="form.promo_body" />
             </div>
 
             <h2 class="border-t border-ink-100 pt-4 font-semibold">Футер</h2>

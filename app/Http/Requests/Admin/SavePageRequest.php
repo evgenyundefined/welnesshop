@@ -20,7 +20,7 @@ class SavePageRequest extends FormRequest
                 'regex:/^[a-z0-9-]+$/',
                 Rule::unique('pages', 'slug')->ignore($this->route('page')),
             ],
-            'body' => ['required', 'string', 'max:50000'],
+            'body' => ['required', 'string', 'max:200000'],
             'position' => ['nullable', 'integer', 'min:0', 'max:65535'],
             'is_published' => ['nullable', 'boolean'],
         ];

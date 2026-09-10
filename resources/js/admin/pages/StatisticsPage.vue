@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import api, { messageFrom } from '../api'
 import { card, input, orderStatuses, td, th } from '../ui'
+import BarChart from '../components/BarChart.vue'
 import { formatMoney } from '../../money'
 
 const periods = {
@@ -30,8 +31,6 @@ watch(period, load)
 onMounted(load)
 
 const currency = computed(() => stats.value?.revenue.currency)
-
-const peak = computed(() => Math.max(1, ...(stats.value?.daily ?? []).map(day => day.orders)))
 
 const tiles = computed(() => {
     if (!stats.value) {
@@ -83,27 +82,26 @@ const shortDate = date => new Date(date).toLocaleDateString('ru-RU', { day: '2-d
                 </div>
             </div>
 
-            <div :class="card" class="p-5">
-                <h2 class="mb-4 font-semibold">Заказы по дням</h2>
+            <div class="grid gap-4 lg:grid-cols-2">
+                <div :class="card" class="p-5">
+                    <h2 class="mb-4 font-semibold">Заказы по дням</h2>
 
-                <div class="flex h-40 items-stretch gap-px overflow-x-auto">
-                    <div
-                        v-for="day in stats.daily"
-                        :key="day.date"
-                        class="flex min-w-2 flex-1 flex-col justify-end"
-                        :title="`${shortDate(day.date)}: ${day.orders} заказов, ${formatMoney(day.revenue_minor, currency)}`"
-                    >
-                        <div
-                            class="rounded-t transition"
-                            :class="day.orders ? 'bg-gold-400 hover:bg-gold-500' : 'bg-ink-200'"
-                            :style="{ height: `${Math.max(2, (day.orders / peak) * 100)}%` }"
-                        ></div>
-                    </div>
+                    <BarChart
+                        :series="stats.daily.map(day => ({ date: day.date, value: day.orders }))"
+                        :tooltip="point => `${shortDate(point.date)}: ${point.value} заказов`"
+                    />
                 </div>
 
-                <div class="mt-2 flex justify-between text-xs text-ink-400">
-                    <span>{{ shortDate(stats.daily[0].date) }}</span>
-                    <span>{{ shortDate(stats.daily[stats.daily.length - 1].date) }}</span>
+                <div :class="card" class="p-5">
+                    <div class="mb-4">
+                        <h2 class="font-semibold">Просмотры товаров по дням</h2>
+                        <p class="text-xs text-ink-400">Открытия карточек, суммарно по всем товарам.</p>
+                    </div>
+
+                    <BarChart
+                        :series="stats.views_daily.map(day => ({ date: day.date, value: day.views }))"
+                        :tooltip="point => `${shortDate(point.date)}: ${point.value} просмотров`"
+                    />
                 </div>
             </div>
 
