@@ -2,18 +2,15 @@
 
 namespace App\Actions\Admin\Content;
 
-use App\Models\Page;
-use App\Models\SiteSetting;
+use App\Support\ContentImagePaths;
 use Illuminate\Contracts\Filesystem\Filesystem;
-use Illuminate\Support\Collection;
 
 class PurgeOrphanedContentImages
 {
-    private const DIRECTORY = 'content';
-
-    private const SAFE_NAME = '/^[A-Za-z0-9._-]+$/';
-
-    public function __construct(private readonly Filesystem $disk) {}
+    public function __construct(
+        private readonly Filesystem $disk,
+        private readonly ContentImagePaths $paths,
+    ) {}
 
     /**
      * Pictures uploaded from the editor belong to the text they were pasted
@@ -23,36 +20,8 @@ class PurgeOrphanedContentImages
      */
     public function __invoke(string ...$replacedHtml): void
     {
-        $orphans = $this->pathsIn(...$replacedHtml)->diff($this->referencedPaths());
-
-        foreach ($orphans as $path) {
+        foreach ($this->paths->in(...$replacedHtml)->diff($this->paths->referenced()) as $path) {
             $this->disk->delete($path);
         }
-    }
-
-    /** @return Collection<int, string> */
-    private function referencedPaths(): Collection
-    {
-        $texts = Page::query()->pluck('body')->all();
-
-        foreach (SiteSetting::query()->get() as $settings) {
-            $texts = [...$texts, ...array_values(array_filter($settings->getAttributes(), is_string(...)))];
-        }
-
-        return $this->pathsIn(...$texts);
-    }
-
-    /** @return Collection<int, string> */
-    private function pathsIn(?string ...$html): Collection
-    {
-        $prefix = preg_quote($this->disk->url(self::DIRECTORY.'/'), '~');
-
-        preg_match_all('~'.$prefix.'([^"\'\s<>?#]+)~', implode(' ', array_filter($html)), $matches);
-
-        return collect($matches[1])
-            ->filter(fn (string $name): bool => preg_match(self::SAFE_NAME, $name) === 1)
-            ->map(fn (string $name): string => self::DIRECTORY.'/'.$name)
-            ->unique()
-            ->values();
     }
 }
