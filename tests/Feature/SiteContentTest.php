@@ -21,8 +21,7 @@ class SiteContentTest extends TestCase
         $product = $this->makeProduct(['category_id' => $category->id]);
 
         ($this->app->make(SaveSiteSettings::class))([
-            'contact_phone' => 'ххххх',
-            'contact_email' => 'shop@example.ru',
+            'contacts_body' => '<p><strong>ххххх</strong></p><p><a href="mailto:shop@example.ru">shop@example.ru</a></p>',
             'disclaimer' => 'Текст дисклеймера.',
         ]);
 
@@ -30,8 +29,7 @@ class SiteContentTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.banner', null)
             ->assertJsonPath('data.disclaimer', 'Текст дисклеймера.')
-            ->assertJsonPath('data.contacts.phone', 'ххххх')
-            ->assertJsonPath('data.contacts.email', 'shop@example.ru')
+            ->assertJsonPath('data.contacts_html', fn (string $html): bool => str_contains($html, 'shop@example.ru'))
             ->assertJsonCount(1, 'data.pages')
             ->assertJsonPath('data.pages.0.title', 'Доставка и оплата')
             ->assertJsonPath('data.pages.0.slug', $page->slug)

@@ -113,4 +113,33 @@
     .prose-page > :last-child {
         @apply mb-0;
     }
+
+    /* The footer column sits on the dark ground, so it needs its own palette
+       rather than the .prose-page one. */
+    .prose-footer p,
+    .prose-footer ul,
+    .prose-footer ol {
+        @apply mb-2 text-ink-400;
+    }
+
+    .prose-footer ul,
+    .prose-footer ol {
+        @apply space-y-2 pl-0 list-none;
+    }
+
+    .prose-footer strong {
+        @apply font-semibold text-white;
+    }
+
+    .prose-footer a {
+        @apply text-ink-400 no-underline transition hover:text-gold-300;
+    }
+
+    .prose-footer img {
+        @apply mb-2 max-w-full rounded-lg;
+    }
+
+    .prose-footer > :last-child {
+        @apply mb-0;
+    }
 }

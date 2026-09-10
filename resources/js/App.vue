@@ -7,7 +7,6 @@ import { site } from './stores/site'
 const router = useRouter()
 const customer = computed(() => session.state.customer)
 const cartCount = computed(() => session.state.cart.total_quantity)
-const contacts = computed(() => site.state.contacts)
 
 const linkClass = 'text-ink-300 transition hover:text-gold-300'
 const activeClass = 'text-gold-300 font-semibold'
@@ -136,14 +135,9 @@ async function logout() {
                         </ul>
                     </section>
 
-                    <section>
+                    <section v-if="site.state.contacts_html">
                         <h2 class="mb-3 font-semibold text-white">Контакты</h2>
-                        <ul class="space-y-2">
-                            <li v-if="contacts.phone" class="font-semibold text-white">{{ contacts.phone }}</li>
-                            <li v-if="contacts.email">
-                                <a :href="`mailto:${contacts.email}`" :class="footerLink">{{ contacts.email }}</a>
-                            </li>
-                        </ul>
+                        <div class="prose-footer" v-html="site.state.contacts_html"></div>
                     </section>
                 </div>
 

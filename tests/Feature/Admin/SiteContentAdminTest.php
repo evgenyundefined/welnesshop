@@ -134,25 +134,37 @@ class SiteContentAdminTest extends TestCase
         $this->putJson(route('admin.api.site.update'), [
             'promo_heading' => 'О компании',
             'promo_body' => '## Почему мы',
-            'contact_phone' => 'ххххх',
-            'contact_email' => '  SHOP@Example.RU ',
+            'contacts_body' => '  <p><strong>ххххх</strong></p>  ',
             'disclaimer' => 'Дисклеймер.',
         ])
             ->assertOk()
             ->assertJsonPath('data.promo_heading', 'О компании')
-            ->assertJsonPath('data.contact_email', 'shop@example.ru')
-            ->assertJsonPath('data.contact_phone', 'ххххх');
+            ->assertJsonPath('data.contacts_body', '<p><strong>ххххх</strong></p>');
 
         $this->assertSame('Дисклеймер.', SiteSetting::query()->sole()->disclaimer);
     }
 
-    public function test_a_malformed_email_is_refused(): void
+    public function test_the_footer_contacts_keep_the_markup_they_were_given(): void
     {
         $this->signInAdmin();
 
-        $this->putJson(route('admin.api.site.update'), ['contact_email' => 'не-почта'])
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors('contact_email');
+        $html = '<p><strong>+7 000 000-00-00</strong></p>'
+            .'<p><a href="https://t.me/agelesscode">Telegram</a></p>'
+            .'<p>Пн–Пт, 10:00–19:00</p>';
+
+        $this->putJson(route('admin.api.site.update'), ['contacts_body' => $html])->assertOk();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.contacts_html', $html);
+    }
+
+    public function test_emptying_the_contacts_leaves_the_footer_column_out(): void
+    {
+        $this->signInAdmin();
+
+        $this->putJson(route('admin.api.site.update'), ['contacts_body' => '<p>Телефон</p>'])->assertOk();
+        $this->putJson(route('admin.api.site.update'), ['contacts_body' => ''])->assertOk();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.contacts_html', null);
     }
 
     public function test_an_admin_uploads_and_then_removes_the_banner(): void

@@ -16,8 +16,7 @@ use Illuminate\Support\Facades\Storage;
     'promo_heading',
     'promo_body',
     'disclaimer',
-    'contact_email',
-    'contact_phone',
+    'contacts_body',
 ])]
 class SiteSetting extends Model
 {

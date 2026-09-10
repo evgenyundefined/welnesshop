@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 
 class SaveSiteSettingsRequest extends FormRequest
 {
@@ -19,8 +18,7 @@ class SaveSiteSettingsRequest extends FormRequest
             'promo_heading' => ['nullable', 'string', 'max:255'],
             'promo_body' => ['nullable', 'string', 'max:100000'],
             'disclaimer' => ['nullable', 'string', 'max:5000'],
-            'contact_email' => ['nullable', 'string', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:32'],
+            'contacts_body' => ['nullable', 'string', 'max:20000'],
         ];
     }
 
@@ -37,13 +35,10 @@ class SaveSiteSettingsRequest extends FormRequest
                 'promo_heading',
                 'promo_body',
                 'disclaimer',
-                'contact_phone',
+                'contacts_body',
             ])->mapWithKeys(fn (string $field): array => [
                 $field => $this->filled($field) ? trim($this->string($field)->toString()) : null,
             ])->all(),
-            'contact_email' => $this->filled('contact_email')
-                ? Str::lower(trim($this->string('contact_email')->toString()))
-                : null,
         ];
     }
 }

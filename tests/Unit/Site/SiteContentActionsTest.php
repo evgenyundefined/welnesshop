@@ -33,11 +33,11 @@ class SiteContentActionsTest extends TestCase
     {
         $save = $this->app->make(SaveSiteSettings::class);
 
-        $save(['contact_phone' => '+7 495 000 00 00', 'banner_enabled' => true]);
-        $save(['contact_email' => 'shop@example.ru']);
+        $save(['contacts_body' => '<p>Телефон</p>', 'banner_enabled' => true]);
+        $save(['contacts_body' => '<p><strong>+7 495 000 00 00</strong></p>']);
 
         $this->assertSame(1, SiteSetting::query()->count());
-        $this->assertSame('shop@example.ru', SiteSetting::query()->sole()->contact_email);
+        $this->assertSame('<p><strong>+7 495 000 00 00</strong></p>', SiteSetting::query()->sole()->contacts_body);
     }
 
     public function test_saving_a_page_creates_then_updates_the_same_row(): void

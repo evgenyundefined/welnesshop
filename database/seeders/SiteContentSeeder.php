@@ -12,8 +12,6 @@ use Illuminate\Database\Seeder;
  */
 class SiteContentSeeder extends Seeder
 {
-    private const string PLACEHOLDER = 'ххххх';
-
     public function __construct(private readonly LoadSiteSettings $loadSiteSettings) {}
 
     public function run(): void
@@ -110,8 +108,11 @@ class SiteContentSeeder extends Seeder
                 HTML,
             'disclaimer' => 'Здесь размещается ваш дисклеймер о назначении продукции. '
                 .'Текст должен быть составлен под ваш бизнес — отредактируйте его в админке.',
-            'contact_email' => 'xxxxx@example.com',
-            'contact_phone' => self::PLACEHOLDER,
+            'contacts_body' => <<<'HTML'
+                <p><strong>ххххх ххххх</strong></p>
+                <p><a href="mailto:xxxxx@example.com">xxxxx@example.com</a></p>
+                <p>Блок редактируется в админке: «Сайт» → «Контакты в футере».</p>
+                HTML,
         ];
     }
 }

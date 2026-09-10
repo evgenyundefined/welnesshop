@@ -13,8 +13,7 @@ const form = reactive({
     promo_heading: '',
     promo_body: '',
     disclaimer: '',
-    contact_email: '',
-    contact_phone: '',
+    contacts_body: '',
 })
 
 const bannerImageUrl = ref(null)
@@ -146,16 +145,14 @@ async function removeBanner() {
 
             <h2 class="border-t border-ink-100 pt-4 font-semibold">Футер</h2>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label for="contact_phone" class="mb-1.5 block text-sm text-ink-500">Телефон</label>
-                    <input id="contact_phone" v-model="form.contact_phone" type="text" :class="input">
-                </div>
-                <div>
-                    <label for="contact_email" class="mb-1.5 block text-sm text-ink-500">E-mail</label>
-                    <input id="contact_email" v-model="form.contact_email" type="email" :class="input">
-                    <p v-if="errors.contact_email" class="mt-1 text-sm text-red-700">{{ errors.contact_email }}</p>
-                </div>
+            <div>
+                <span class="mb-1.5 block text-sm text-ink-500">Контакты в футере</span>
+                <RichEditor v-model="form.contacts_body" />
+                <p class="mt-1 text-xs text-ink-400">
+                    Колонка «Контакты» в футере. Футер тёмный, поэтому цвета там свои:
+                    жирный текст выводится белым, ссылки подсвечиваются золотым.
+                </p>
+                <p v-if="errors.contacts_body" class="mt-1 text-sm text-red-700">{{ errors.contacts_body }}</p>
             </div>
 
             <div>
