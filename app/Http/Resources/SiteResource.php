@@ -35,6 +35,7 @@ class SiteResource extends JsonResource
             ],
             'disclaimer' => $settings->disclaimer,
             'contacts_html' => $settings->contacts_body,
+            'info_html' => $settings->info_body,
             'pages' => PageLinkResource::collection($this->resource['pages']),
             'categories' => $this->resource['categories']->map(static fn (Category $category): array => [
                 'slug' => $category->slug,

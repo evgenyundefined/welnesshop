@@ -157,6 +157,35 @@ class SiteContentAdminTest extends TestCase
         $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.contacts_html', $html);
     }
 
+    public function test_the_information_column_is_written_by_hand_and_ignores_the_pages(): void
+    {
+        $this->signInAdmin();
+
+        $html = '<ul><li><a href="/pages/dostavka-i-oplata">Доставка</a></li></ul>';
+        $this->putJson(route('admin.api.site.update'), ['info_body' => $html])->assertOk();
+
+        $this->postJson(route('admin.api.pages.store'), [
+            'title' => 'Новая страница',
+            'body' => '<p>Текст</p>',
+            'visibility' => 'published',
+        ])->assertCreated();
+
+        $this->getJson(route('api.site'))
+            ->assertOk()
+            ->assertJsonPath('data.info_html', $html)
+            ->assertJsonCount(1, 'data.pages');
+    }
+
+    public function test_emptying_the_information_column_leaves_it_out_of_the_footer(): void
+    {
+        $this->signInAdmin();
+
+        $this->putJson(route('admin.api.site.update'), ['info_body' => '<ul><li>Пункт</li></ul>'])->assertOk();
+        $this->putJson(route('admin.api.site.update'), ['info_body' => ''])->assertOk();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.info_html', null);
+    }
+
     public function test_emptying_the_contacts_leaves_the_footer_column_out(): void
     {
         $this->signInAdmin();

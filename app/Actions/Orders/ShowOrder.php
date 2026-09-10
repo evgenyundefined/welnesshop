@@ -17,6 +17,6 @@ class ShowOrder
             throw (new ModelNotFoundException)->setModel(Order::class);
         }
 
-        return $order->load('items');
+        return $order->load('items.product.primaryImage');
     }
 }

@@ -3,8 +3,10 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { session } from './stores/session'
 import { site } from './stores/site'
+import { useInternalLinkNavigation } from './internalLinks'
 
 const router = useRouter()
+const followInternalLink = useInternalLinkNavigation()
 const customer = computed(() => session.state.customer)
 const cartCount = computed(() => session.state.cart.total_quantity)
 
@@ -124,20 +126,14 @@ async function logout() {
                         </ul>
                     </section>
 
-                    <section v-if="site.state.pages.length">
+                    <section v-if="site.state.info_html">
                         <h2 class="mb-3 font-semibold text-white">Информация</h2>
-                        <ul class="space-y-2">
-                            <li v-for="page in site.state.pages" :key="page.slug">
-                                <RouterLink :to="{ name: 'page', params: { slug: page.slug } }" :class="footerLink">
-                                    {{ page.title }}
-                                </RouterLink>
-                            </li>
-                        </ul>
+                        <div class="prose-footer" v-html="site.state.info_html" @click="followInternalLink"></div>
                     </section>
 
                     <section v-if="site.state.contacts_html">
                         <h2 class="mb-3 font-semibold text-white">Контакты</h2>
-                        <div class="prose-footer" v-html="site.state.contacts_html"></div>
+                        <div class="prose-footer" v-html="site.state.contacts_html" @click="followInternalLink"></div>
                     </section>
                 </div>
 

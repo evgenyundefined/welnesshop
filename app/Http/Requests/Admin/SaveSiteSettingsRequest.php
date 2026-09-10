@@ -19,6 +19,7 @@ class SaveSiteSettingsRequest extends FormRequest
             'promo_body' => ['nullable', 'string', 'max:100000'],
             'disclaimer' => ['nullable', 'string', 'max:5000'],
             'contacts_body' => ['nullable', 'string', 'max:20000'],
+            'info_body' => ['nullable', 'string', 'max:20000'],
         ];
     }
 
@@ -36,6 +37,7 @@ class SaveSiteSettingsRequest extends FormRequest
                 'promo_body',
                 'disclaimer',
                 'contacts_body',
+                'info_body',
             ])->mapWithKeys(fn (string $field): array => [
                 $field => $this->filled($field) ? trim($this->string($field)->toString()) : null,
             ])->all(),

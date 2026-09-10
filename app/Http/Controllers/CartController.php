@@ -95,6 +95,6 @@ class CartController extends Controller
 
     private function present(Cart $cart): CartResource
     {
-        return new CartResource($cart->load('items.product'));
+        return new CartResource($cart->load('items.product.primaryImage'));
     }
 }

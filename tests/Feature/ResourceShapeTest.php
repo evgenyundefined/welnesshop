@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Payments\PendingPaymentGateway;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ResourceShapeTest extends TestCase
@@ -182,6 +183,81 @@ class ResourceShapeTest extends TestCase
         $this->assertSame($product->id, $response->json('data.items.0.product.id'));
     }
 
+    public function test_the_cart_line_carries_the_cover_of_its_product(): void
+    {
+        $customer = Customer::factory()->create();
+        $withPhoto = $this->makeProduct(['stock' => 5]);
+        $withoutPhoto = $this->makeProduct(['stock' => 5]);
+        ProductImage::factory()->for($withPhoto)->create(['position' => 1]);
+        $cover = ProductImage::factory()->for($withPhoto)->primary()->create(['position' => 2]);
+
+        $this->actingAs($customer);
+        $this->postJson(route('api.cart.items.store'), ['product_id' => $withPhoto->id, 'quantity' => 1]);
+        $this->postJson(route('api.cart.items.store'), ['product_id' => $withoutPhoto->id, 'quantity' => 1]);
+
+        $lines = collect($this->getJson(route('api.cart.show'))->assertOk()->json('data.items'))
+            ->keyBy('product.id');
+
+        $this->assertSame($cover->url, $lines[$withPhoto->id]['product']['cover']['url']);
+        $this->assertNull($lines[$withoutPhoto->id]['product']['cover']);
+    }
+
+    public function test_an_order_line_carries_the_cover_of_the_product_it_was_made_from(): void
+    {
+        $customer = Customer::factory()->create();
+        $product = $this->makeProduct(['stock' => 5]);
+        $cover = ProductImage::factory()->for($product)->primary()->create(['position' => 1]);
+
+        $this->actingAs($customer);
+        $this->postJson(route('api.cart.items.store'), ['product_id' => $product->id, 'quantity' => 1]);
+        $number = $this->postJson(route('api.checkout'), self::CHECKOUT)->assertCreated()->json('data.number');
+
+        $this->getJson(route('api.orders.show', $number))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.cover_url', $cover->url);
+    }
+
+    public function test_an_order_line_reports_no_cover_once_its_product_is_gone(): void
+    {
+        $customer = Customer::factory()->create();
+        $product = $this->makeProduct(['stock' => 5]);
+        ProductImage::factory()->for($product)->primary()->create(['position' => 1]);
+
+        $this->actingAs($customer);
+        $this->postJson(route('api.cart.items.store'), ['product_id' => $product->id, 'quantity' => 1]);
+        $number = $this->postJson(route('api.checkout'), self::CHECKOUT)->assertCreated()->json('data.number');
+
+        $product->delete();
+
+        $this->getJson(route('api.orders.show', $number))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.product_id', null)
+            ->assertJsonPath('data.items.0.cover_url', null)
+            ->assertJsonPath('data.items.0.product_name', $product->name);
+    }
+
+    public function test_the_covers_of_an_order_do_not_cost_a_query_per_line(): void
+    {
+        $customer = Customer::factory()->create();
+        $this->actingAs($customer);
+
+        foreach (range(1, 4) as $ignored) {
+            $product = $this->makeProduct(['stock' => 5]);
+            ProductImage::factory()->for($product)->primary()->create(['position' => 1]);
+            $this->postJson(route('api.cart.items.store'), ['product_id' => $product->id, 'quantity' => 1]);
+        }
+
+        $number = $this->postJson(route('api.checkout'), self::CHECKOUT)->assertCreated()->json('data.number');
+
+        DB::enableQueryLog();
+
+        $this->getJson(route('api.orders.show', $number))->assertOk()->assertJsonCount(4, 'data.items');
+
+        $this->assertLessThanOrEqual(4, count(DB::getQueryLog()));
+
+        DB::disableQueryLog();
+    }
+
     public function test_the_customer_payload_carries_every_documented_field(): void
     {
         $customer = Customer::factory()->create([
@@ -240,6 +316,7 @@ class ResourceShapeTest extends TestCase
                             'product_id' => $product->id,
                             'product_name' => 'Epitalon',
                             'product_slug' => $product->slug,
+                            'cover_url' => null,
                             'unit_price_minor' => 900_00,
                             'quantity' => 2,
                             'total_minor' => 1_800_00,

@@ -40,7 +40,7 @@ class MergeGuestCart
 
             $guestCart->delete();
 
-            return $customerCart->load('items.product');
+            return $customerCart->load('items.product.primaryImage');
         });
     }
 }

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import api, { messageFrom } from '../api'
 import { formatMoney } from '../money'
 import { deliveryMethods } from '../labels'
+import Thumbnail from '../components/Thumbnail.vue'
 
 const props = defineProps({ number: { type: String, required: true } })
 
@@ -84,9 +85,17 @@ async function pay() {
             <table class="w-full text-sm">
                 <tbody>
                     <tr v-for="item in order.items" :key="item.id" class="border-b border-ink-100 last:border-0">
-                        <td class="py-2">{{ item.product_name }}</td>
-                        <td class="py-2 text-ink-500">{{ item.quantity }} шт.</td>
-                        <td class="py-2 text-right font-semibold">{{ formatMoney(item.total_minor, order.currency) }}</td>
+                        <td class="py-3 pr-4">
+                            <RouterLink
+                                :to="{ name: 'product', params: { slug: item.product_slug } }"
+                                class="flex items-center gap-3 hover:text-gold-700"
+                            >
+                                <Thumbnail :url="item.cover_url" :alt="item.product_name" />
+                                <span>{{ item.product_name }}</span>
+                            </RouterLink>
+                        </td>
+                        <td class="py-3 pr-4 whitespace-nowrap text-ink-500">{{ item.quantity }} шт.</td>
+                        <td class="py-3 text-right font-semibold whitespace-nowrap">{{ formatMoney(item.total_minor, order.currency) }}</td>
                     </tr>
                 </tbody>
             </table>

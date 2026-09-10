@@ -108,10 +108,18 @@ class SiteContentSeeder extends Seeder
                 HTML,
             'disclaimer' => 'Здесь размещается ваш дисклеймер о назначении продукции. '
                 .'Текст должен быть составлен под ваш бизнес — отредактируйте его в админке.',
+            'info_body' => <<<'HTML'
+                <ul>
+                <li><a href="/pages/vopros-otvet">Вопрос-ответ</a></li>
+                <li><a href="/pages/dostavka-i-oplata">Доставка и оплата</a></li>
+                <li><a href="/pages/obuchenie">Обучение</a></li>
+                <li><a href="/pages/kontakty">Контакты</a></li>
+                </ul>
+                HTML,
             'contacts_body' => <<<'HTML'
                 <p><strong>ххххх ххххх</strong></p>
                 <p><a href="mailto:xxxxx@example.com">xxxxx@example.com</a></p>
-                <p>Блок редактируется в админке: «Сайт» → «Контакты в футере».</p>
+                <p>Блок редактируется в админке: «Сайт» → «Колонка “Контакты”».</p>
                 HTML,
         ];
     }

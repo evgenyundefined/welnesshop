@@ -27,6 +27,7 @@ class SiteSettingResource extends JsonResource
             'promo_body' => $this->resource->promo_body,
             'disclaimer' => $this->resource->disclaimer,
             'contacts_body' => $this->resource->contacts_body,
+            'info_body' => $this->resource->info_body,
         ];
     }
 

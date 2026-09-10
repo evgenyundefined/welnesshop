@@ -14,6 +14,7 @@ const form = reactive({
     promo_body: '',
     disclaimer: '',
     contacts_body: '',
+    info_body: '',
 })
 
 const bannerImageUrl = ref(null)
@@ -146,11 +147,21 @@ async function removeBanner() {
             <h2 class="border-t border-ink-100 pt-4 font-semibold">Футер</h2>
 
             <div>
-                <span class="mb-1.5 block text-sm text-ink-500">Контакты в футере</span>
+                <span class="mb-1.5 block text-sm text-ink-500">Колонка «Информация»</span>
+                <RichEditor v-model="form.info_body" />
+                <p class="mt-1 text-xs text-ink-400">
+                    Ссылки набираются вручную — колонка не следит за списком страниц.
+                    Адрес страницы витрины выглядит как <code>/pages/slug</code>.
+                </p>
+                <p v-if="errors.info_body" class="mt-1 text-sm text-red-700">{{ errors.info_body }}</p>
+            </div>
+
+            <div>
+                <span class="mb-1.5 block text-sm text-ink-500">Колонка «Контакты»</span>
                 <RichEditor v-model="form.contacts_body" />
                 <p class="mt-1 text-xs text-ink-400">
-                    Колонка «Контакты» в футере. Футер тёмный, поэтому цвета там свои:
-                    жирный текст выводится белым, ссылки подсвечиваются золотым.
+                    Футер тёмный, поэтому цвета в обеих колонках свои: жирный текст выводится белым,
+                    ссылки подсвечиваются золотым.
                 </p>
                 <p v-if="errors.contacts_body" class="mt-1 text-sm text-red-700">{{ errors.contacts_body }}</p>
             </div>

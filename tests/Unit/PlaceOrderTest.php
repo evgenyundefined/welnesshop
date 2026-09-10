@@ -112,26 +112,35 @@ class PlaceOrderTest extends TestCase
         }
     }
 
-    public function test_it_loads_the_cart_products_in_one_query_instead_of_one_per_line(): void
+    public function test_it_reads_the_products_in_a_fixed_number_of_queries_whatever_the_line_count(): void
+    {
+        $this->assertSame(
+            $this->productSelectsWhilePlacingOrder(2),
+            $this->productSelectsWhilePlacingOrder(6),
+        );
+    }
+
+    private function productSelectsWhilePlacingOrder(int $lines): int
     {
         $customer = Customer::factory()->create();
         $cart = $this->guestCart();
 
-        collect(range(1, 3))->each(function () use ($cart): void {
+        collect(range(1, $lines))->each(function () use ($cart): void {
             $cart->items()->create(['product_id' => $this->makeProduct(['stock' => 5])->id, 'quantity' => 1]);
         });
 
-        $productSelects = 0;
-        DB::listen(function ($query) use (&$productSelects): void {
+        $selects = 0;
+        DB::listen(function ($query) use (&$selects): void {
             if (str_contains($query->sql, 'select') && str_contains($query->sql, '"products"')) {
-                $productSelects++;
+                $selects++;
             }
         });
 
         $order = ($this->placeOrder)($customer, Cart::query()->findOrFail($cart->id), $this->details());
 
-        $this->assertSame(3, $order->items()->count());
-        $this->assertSame(1, $productSelects);
+        $this->assertSame($lines, $order->items()->count());
+
+        return $selects;
     }
 
     public function test_the_order_number_uses_the_configured_prefix_and_shape(): void

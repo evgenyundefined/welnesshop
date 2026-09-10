@@ -19,6 +19,10 @@ class OrderItemResource extends JsonResource
             'product_id' => $this->resource->product_id,
             'product_name' => $this->resource->product_name,
             'product_slug' => $this->resource->product_slug,
+            'cover_url' => $this->whenLoaded(
+                'product',
+                fn (): ?string => $this->resource->product?->primaryImage?->url,
+            ),
             'unit_price_minor' => $this->resource->unit_price_minor,
             'quantity' => $this->resource->quantity,
             'total_minor' => $this->resource->total_minor,

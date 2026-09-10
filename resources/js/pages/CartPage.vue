@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { session } from '../stores/session'
 import { formatMoney } from '../money'
 import { messageFrom } from '../api'
+import Thumbnail from '../components/Thumbnail.vue'
 
 const router = useRouter()
 const cart = computed(() => session.state.cart)
@@ -54,9 +55,10 @@ function goToCheckout() {
                         <td class="py-3 pr-4">
                             <RouterLink
                                 :to="{ name: 'product', params: { slug: item.product.slug } }"
-                                class="hover:text-gold-700"
+                                class="flex items-center gap-3 hover:text-gold-700"
                             >
-                                {{ item.product.name }}
+                                <Thumbnail :url="item.product.cover?.url" :alt="item.product.name" />
+                                <span>{{ item.product.name }}</span>
                             </RouterLink>
                         </td>
                         <td class="py-3 pr-4 whitespace-nowrap">{{ formatMoney(item.unit_price_minor, cart.currency) }}</td>

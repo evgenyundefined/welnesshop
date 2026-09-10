@@ -6,6 +6,7 @@ const state = reactive({
     promo: null,
     disclaimer: null,
     contacts_html: null,
+    info_html: null,
     pages: [],
     categories: [],
     products: [],

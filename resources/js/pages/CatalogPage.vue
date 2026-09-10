@@ -4,8 +4,10 @@ import { useRoute } from 'vue-router'
 import api from '../api'
 import { site } from '../stores/site'
 import ProductCard from '../components/ProductCard.vue'
+import { useInternalLinkNavigation } from '../internalLinks'
 
 const route = useRoute()
+const followInternalLink = useInternalLinkNavigation()
 
 const categories = ref([])
 const products = ref([])
@@ -165,6 +167,7 @@ onMounted(async () => {
             v-if="site.state.promo.body_html"
             class="prose-page rounded-xl border border-ink-200 bg-white p-6"
             v-html="site.state.promo.body_html"
+            @click="followInternalLink"
         ></div>
     </section>
 </template>

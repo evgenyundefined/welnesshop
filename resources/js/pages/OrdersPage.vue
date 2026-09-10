@@ -13,6 +13,12 @@ const statuses = {
     cancelled: 'Отменён',
 }
 
+const payButton =
+    'inline-block rounded-lg bg-gold-400 px-4 py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-300'
+
+const detailsButton =
+    'inline-block rounded-lg border border-ink-300 px-4 py-2 text-sm transition hover:border-ink-400'
+
 onMounted(async () => {
     const { data } = await api.get('/orders')
     orders.value = data.data
@@ -48,9 +54,9 @@ onMounted(async () => {
                     <td class="py-3 text-right">
                         <RouterLink
                             :to="{ name: 'payment', params: { number: order.number } }"
-                            class="text-gold-700 underline"
+                            :class="order.status === 'awaiting_payment' ? payButton : detailsButton"
                         >
-                            Оплата
+                            {{ order.status === 'awaiting_payment' ? 'Оплатить' : 'Подробнее' }}
                         </RouterLink>
                     </td>
                 </tr>

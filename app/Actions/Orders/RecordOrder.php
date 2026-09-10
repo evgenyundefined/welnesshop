@@ -53,7 +53,7 @@ class RecordOrder
                 $products[$line['product_id']]->decrement('stock', $line['quantity']);
             });
 
-            return $order->load('items');
+            return $order->load('items.product.primaryImage');
         });
     }
 
