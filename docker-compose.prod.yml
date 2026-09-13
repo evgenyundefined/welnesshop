@@ -97,6 +97,9 @@ services:
         if [ -z "$$staging" ] && [ -f "$$renewal" ] && grep -q acme-staging "$$renewal"; then
           echo "[certbot] the stored certificate is a staging one, dropping it to ask for a real one"
           certbot delete --cert-name "$$primary" --non-interactive || true
+          # certbot refusing to delete would leave the staging certificate in
+          # place and the reissue below skipped, so the files go by hand.
+          rm -rf "/etc/letsencrypt/live/$$primary" "/etc/letsencrypt/archive/$$primary" "$$renewal"
         fi
 
         # nginx has to be answering on port 80 and the domain has to resolve to
