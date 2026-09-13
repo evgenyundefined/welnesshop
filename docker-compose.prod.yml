@@ -43,13 +43,79 @@ services:
     image: '${NGINX_IMAGE:-wellness-shop-nginx:latest}'
     restart: unless-stopped
     ports:
-      - '${APP_PORT:-80}:80'
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+    environment:
+      # Every name the certificate has to cover, space separated. Left unset,
+      # the stack stays on plain http and certbot is never asked for anything.
+      SERVER_NAME: '${SERVER_NAME:-_}'
     volumes:
       # The same volume the app writes uploads to, so photos are served
       # straight off disk rather than through PHP.
       - app-storage:/var/www/html/storage/app/public:ro
+      - certbot-conf:/etc/letsencrypt:ro
+      - certbot-webroot:/var/www/certbot:ro
     depends_on:
       - app
+
+  # Issues the certificate on first start, then wakes twice a day to renew it.
+  # nginx watches the shared volume and reloads itself once a certificate shows
+  # up, so neither service has to restart the other.
+  certbot:
+    image: certbot/certbot:v3.1.0
+    restart: unless-stopped
+    environment:
+      CERTBOT_DOMAINS: '${SERVER_NAME:?set SERVER_NAME to the domain}'
+      CERTBOT_EMAIL: '${CERTBOT_EMAIL:?set CERTBOT_EMAIL for expiry notices}'
+      # Any value switches to the Let's Encrypt test service: browsers reject
+      # its certificates, but its rate limits forgive a misconfigured run.
+      CERTBOT_STAGING: '${CERTBOT_STAGING:-}'
+    volumes:
+      - certbot-conf:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -eu
+
+        primary=$${CERTBOT_DOMAINS%% *}
+        names=""
+        for domain in $$CERTBOT_DOMAINS; do names="$$names -d $$domain"; done
+
+        staging=""
+        if [ -n "$${CERTBOT_STAGING:-}" ]; then staging="--staging"; fi
+
+        issue() {
+          certbot certonly --webroot -w /var/www/certbot --non-interactive --agree-tos --email "$$CERTBOT_EMAIL" --keep-until-expiring $$staging $$names
+        }
+
+        # nginx has to be answering on port 80 and the domain has to resolve to
+        # this host before a challenge can be fetched, so the first issue is
+        # retried rather than treated as fatal.
+        if [ ! -d "/etc/letsencrypt/live/$$primary" ]; then
+          attempt=1
+          until issue; do
+            if [ "$$attempt" -ge 5 ]; then
+              echo "[certbot] no certificate yet, the loop below keeps trying every 12 hours"
+              break
+            fi
+            echo "[certbot] attempt $$attempt failed, retrying in 60s"
+            attempt=$$((attempt + 1))
+            sleep 60
+          done
+        fi
+
+        trap exit TERM
+        while :; do
+          if [ -d "/etc/letsencrypt/live/$$primary" ]; then
+            certbot renew --webroot -w /var/www/certbot --quiet || true
+          else
+            issue || true
+          fi
+          sleep 43200 & wait $$!
+        done
 
   mysql:
     image: mysql:8.4
@@ -85,3 +151,5 @@ volumes:
   mysql-data:
   redis-data:
   app-storage:
+  certbot-conf:
+  certbot-webroot:

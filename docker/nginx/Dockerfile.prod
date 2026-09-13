@@ -13,4 +13,14 @@ RUN npm run build
 FROM nginx:1.27-alpine
 COPY public /var/www/html/public
 COPY --from=assets /app/public/build /var/www/html/public/build
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/snippets/ /etc/nginx/snippets/
+COPY docker/nginx/templates/ /etc/nginx/templates/
+COPY docker/nginx/entrypoint.prod.sh /usr/local/bin/entrypoint.sh
+
+# The image ships no conf.d/default.conf: the entrypoint writes it, choosing
+# the http or the https variant by whether a certificate is on the volume.
+RUN rm -f /etc/nginx/conf.d/default.conf \
+    && mv /etc/nginx/snippets/https-map.conf /etc/nginx/conf.d/00-https-map.conf \
+    && chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
