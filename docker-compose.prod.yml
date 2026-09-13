@@ -88,8 +88,16 @@ services:
         if [ -n "$${CERTBOT_STAGING:-}" ]; then staging="--staging"; fi
 
         issue() {
-          certbot certonly --webroot -w /var/www/certbot --non-interactive --agree-tos --email "$$CERTBOT_EMAIL" --keep-until-expiring $$staging $$names
+          certbot certonly --webroot -w /var/www/certbot --cert-name "$$primary" --expand --non-interactive --agree-tos --email "$$CERTBOT_EMAIL" --keep-until-expiring $$staging $$names
         }
+
+        # A certificate issued against the test service keeps renewing against
+        # it, so switching CERTBOT_STAGING off has to throw the old one away.
+        renewal=/etc/letsencrypt/renewal/$$primary.conf
+        if [ -z "$$staging" ] && [ -f "$$renewal" ] && grep -q acme-staging "$$renewal"; then
+          echo "[certbot] the stored certificate is a staging one, dropping it to ask for a real one"
+          certbot delete --cert-name "$$primary" --non-interactive || true
+        fi
 
         # nginx has to be answering on port 80 and the domain has to resolve to
         # this host before a challenge can be fetched, so the first issue is
