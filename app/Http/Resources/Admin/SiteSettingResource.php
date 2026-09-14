@@ -17,6 +17,7 @@ class SiteSettingResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'logo_image_url' => $this->resource->logo_image_url,
             'banner_enabled' => $this->resource->banner_enabled,
             'banner_image_url' => $this->resource->banner_image_url,
             'banner_title' => $this->resource->banner_title,

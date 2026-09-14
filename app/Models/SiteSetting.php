@@ -22,6 +22,14 @@ use Illuminate\Support\Facades\Storage;
 class SiteSetting extends Model
 {
     /** @return Attribute<?string, never> */
+    protected function logoImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->logo_image_path === null
+            ? null
+            : Storage::url($this->logo_image_path));
+    }
+
+    /** @return Attribute<?string, never> */
     protected function bannerImageUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => $this->banner_image_path === null

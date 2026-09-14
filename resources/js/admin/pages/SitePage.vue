@@ -18,18 +18,21 @@ const form = reactive({
 })
 
 const bannerImageUrl = ref(null)
+const logoImageUrl = ref(null)
 const errors = ref({})
 const message = ref('')
 const saved = ref(false)
 const saving = ref(false)
 const loaded = ref(false)
 const fileInput = ref(null)
+const logoInput = ref(null)
 
 function apply(data) {
     Object.keys(form).forEach((field) => {
         form[field] = data[field] ?? (typeof form[field] === 'boolean' ? false : '')
     })
     bannerImageUrl.value = data.banner_image_url
+    logoImageUrl.value = data.logo_image_url
 }
 
 onMounted(async () => {
@@ -56,7 +59,7 @@ async function submit() {
     }
 }
 
-async function uploadBanner(event) {
+async function upload(event, endpoint, failure) {
     const file = event.target.files[0]
 
     if (!file) {
@@ -69,27 +72,59 @@ async function uploadBanner(event) {
     payload.append('image', file)
 
     try {
-        const { data } = await api.post('/site/banner', payload)
+        const { data } = await api.post(endpoint, payload)
         apply(data.data)
     } catch (e) {
-        message.value = Object.values(fieldErrorsFrom(e))[0] ?? messageFrom(e, 'Не удалось загрузить баннер')
+        message.value = Object.values(fieldErrorsFrom(e))[0] ?? messageFrom(e, failure)
     } finally {
         event.target.value = ''
     }
 }
 
-async function removeBanner() {
-    const { data } = await api.delete('/site/banner')
+async function remove(endpoint) {
+    const { data } = await api.delete(endpoint)
     apply(data.data)
 }
+
+const uploadBanner = (event) => upload(event, '/site/banner', 'Не удалось загрузить баннер')
+const removeBanner = () => remove('/site/banner')
+const uploadLogo = (event) => upload(event, '/site/logo', 'Не удалось загрузить логотип')
+const removeLogo = () => remove('/site/logo')
 </script>
 
 <template>
     <div v-if="loaded" class="max-w-3xl space-y-4">
         <div>
             <h1 class="text-2xl font-bold tracking-tight">Сайт</h1>
-            <p class="text-sm text-ink-400">Баннер над каталогом, блок над футером и контакты в футере.</p>
+            <p class="text-sm text-ink-400">Логотип, баннер над каталогом, блок над футером и колонки футера.</p>
         </div>
+
+        <section :class="card" class="space-y-4 p-6">
+            <div class="flex flex-wrap items-center gap-3">
+                <h2 class="font-semibold">Логотип</h2>
+                <button type="button" :class="ghostButton" class="ml-auto" @click="logoInput.click()">
+                    {{ logoImageUrl ? 'Заменить' : 'Загрузить' }}
+                </button>
+                <button v-if="logoImageUrl" type="button" :class="dangerButton" @click="removeLogo">Удалить</button>
+                <input
+                    ref="logoInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    hidden
+                    @change="uploadLogo"
+                >
+            </div>
+
+            <p class="text-xs text-ink-400">
+                Показывается в шапке и в футере вместо названия. Высота в шапке — 36 пикселей, так что
+                удобнее всего картинка высотой 72–144 пикселя с прозрачным фоном, до 5 МБ.
+            </p>
+
+            <div v-if="logoImageUrl" class="inline-flex items-center rounded-lg bg-ink-950 px-5 py-4">
+                <img :src="logoImageUrl" alt="" class="h-9 w-auto">
+            </div>
+            <p v-else class="text-sm text-ink-400">Логотип не загружен — в шапке и футере выводится название.</p>
+        </section>
 
         <section :class="card" class="space-y-4 p-6">
             <div class="flex flex-wrap items-center gap-3">

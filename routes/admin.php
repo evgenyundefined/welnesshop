@@ -29,6 +29,8 @@ Route::middleware(Guard::Admin->middleware())->group(function (): void {
         Route::put('/', [SiteController::class, 'update'])->name('update');
         Route::post('banner', [SiteController::class, 'storeBanner'])->name('banner.store');
         Route::delete('banner', [SiteController::class, 'destroyBanner'])->name('banner.destroy');
+        Route::post('logo', [SiteController::class, 'storeLogo'])->name('logo.store');
+        Route::delete('logo', [SiteController::class, 'destroyLogo'])->name('logo.destroy');
     });
 
     Route::apiResource('categories', CategoryController::class)->parameters(['categories' => 'category:id']);

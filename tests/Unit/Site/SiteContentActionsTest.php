@@ -5,7 +5,9 @@ namespace Tests\Unit\Site;
 use App\Actions\Admin\Pages\DeletePage;
 use App\Actions\Admin\Pages\SavePage;
 use App\Actions\Admin\Site\RemoveBannerImage;
+use App\Actions\Admin\Site\RemoveLogoImage;
 use App\Actions\Admin\Site\SaveBannerImage;
+use App\Actions\Admin\Site\SaveLogoImage;
 use App\Actions\Admin\Site\SaveSiteSettings;
 use App\Actions\Site\ListFooterProducts;
 use App\Actions\Site\ListPages;
@@ -100,6 +102,49 @@ class SiteContentActionsTest extends TestCase
         $this->assertNotSame($first, $second);
         Storage::assertExists($second);
         Storage::assertMissing($first);
+    }
+
+    public function test_uploading_a_logo_replaces_the_previous_file(): void
+    {
+        Storage::fake();
+
+        $save = $this->app->make(SaveLogoImage::class);
+
+        $first = $save(UploadedFile::fake()->image('one.png'))->logo_image_path;
+        Storage::assertExists($first);
+
+        $second = $save(UploadedFile::fake()->image('two.png'))->logo_image_path;
+
+        $this->assertNotSame($first, $second);
+        Storage::assertExists($second);
+        Storage::assertMissing($first);
+    }
+
+    public function test_removing_the_logo_deletes_the_file(): void
+    {
+        Storage::fake();
+
+        $path = ($this->app->make(SaveLogoImage::class))(UploadedFile::fake()->image('logo.png'))->logo_image_path;
+
+        $this->assertNull(($this->app->make(RemoveLogoImage::class))()->logo_image_path);
+        Storage::assertMissing($path);
+    }
+
+    public function test_the_logo_and_the_banner_do_not_overwrite_each_other(): void
+    {
+        Storage::fake();
+
+        $logo = ($this->app->make(SaveLogoImage::class))(UploadedFile::fake()->image('logo.png'))->logo_image_path;
+        $banner = ($this->app->make(SaveBannerImage::class))(UploadedFile::fake()->image('banner.jpg'))->banner_image_path;
+
+        ($this->app->make(RemoveLogoImage::class))();
+
+        $settings = SiteSetting::query()->sole();
+
+        $this->assertNull($settings->logo_image_path);
+        $this->assertSame($banner, $settings->banner_image_path);
+        Storage::assertExists($banner);
+        Storage::assertMissing($logo);
     }
 
     public function test_removing_the_banner_deletes_the_file_and_switches_it_off(): void

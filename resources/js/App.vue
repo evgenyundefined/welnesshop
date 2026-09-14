@@ -26,8 +26,9 @@ async function logout() {
     <div class="flex min-h-full flex-col">
         <header class="sticky top-0 z-10 border-b border-ink-700 bg-ink-950 text-white">
             <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
-                <RouterLink :to="{ name: 'catalog' }" class="text-lg font-bold tracking-tight text-gold-300">
-                    agelesscode
+                <RouterLink :to="{ name: 'catalog' }" class="shrink-0 text-lg font-bold tracking-tight text-gold-300">
+                    <img v-if="site.state.logo_url" :src="site.state.logo_url" alt="agelesscode" class="h-9 w-auto">
+                    <template v-else>agelesscode</template>
                 </RouterLink>
 
                 <nav class="hidden items-center gap-5 text-sm lg:flex">
@@ -95,7 +96,13 @@ async function logout() {
 
         <footer class="mt-10 border-t border-ink-700 bg-ink-950 text-sm text-ink-400">
             <div class="mx-auto max-w-6xl px-5 py-10">
-                <p class="mb-8 text-lg font-bold tracking-tight text-gold-300">agelesscode</p>
+                <img
+                    v-if="site.state.logo_url"
+                    :src="site.state.logo_url"
+                    alt="agelesscode"
+                    class="mb-8 h-10 w-auto"
+                >
+                <p v-else class="mb-8 text-lg font-bold tracking-tight text-gold-300">agelesscode</p>
 
                 <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     <section v-if="site.state.products.length">

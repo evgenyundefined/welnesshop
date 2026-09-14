@@ -219,6 +219,54 @@ class SiteContentAdminTest extends TestCase
         $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.banner', null);
     }
 
+    public function test_an_admin_uploads_and_then_removes_the_logo(): void
+    {
+        Storage::fake();
+        $this->signInAdmin();
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.logo_url', null);
+
+        $url = $this->postJson(route('admin.api.site.logo.store'), [
+            'image' => UploadedFile::fake()->image('logo.png'),
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.logo_image_url', fn (string $url): bool => str_contains($url, '/storage/site/'))
+            ->json('data.logo_image_url');
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.logo_url', $url);
+
+        $this->deleteJson(route('admin.api.site.logo.destroy'))
+            ->assertOk()
+            ->assertJsonPath('data.logo_image_url', null);
+
+        $this->getJson(route('api.site'))->assertOk()->assertJsonPath('data.logo_url', null);
+        Storage::assertMissing(str_replace('/storage/', '', $url));
+    }
+
+    public function test_the_logo_upload_is_validated(): void
+    {
+        Storage::fake();
+        $this->signInAdmin();
+
+        $this->postJson(route('admin.api.site.logo.store'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+
+        $this->postJson(route('admin.api.site.logo.store'), [
+            'image' => UploadedFile::fake()->create('logo.pdf', 8, 'application/pdf'),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+
+        $this->postJson(route('admin.api.site.logo.store'), [
+            'image' => UploadedFile::fake()->create('logo.svg', 8, 'image/svg+xml'),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+
+        $this->assertNull(SiteSetting::query()->sole()->logo_image_path);
+    }
+
     public function test_the_banner_upload_is_validated(): void
     {
         Storage::fake();
@@ -258,6 +306,10 @@ class SiteContentAdminTest extends TestCase
                 'image' => UploadedFile::fake()->image('hack.jpg'),
             ])->assertUnauthorized();
             $this->deleteJson(route('admin.api.site.banner.destroy'))->assertUnauthorized();
+            $this->postJson(route('admin.api.site.logo.store'), [
+                'image' => UploadedFile::fake()->image('hack.png'),
+            ])->assertUnauthorized();
+            $this->deleteJson(route('admin.api.site.logo.destroy'))->assertUnauthorized();
         }
 
         $this->assertDatabaseHas('pages', ['id' => $page->id]);

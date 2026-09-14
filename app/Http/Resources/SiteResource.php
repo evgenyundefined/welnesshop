@@ -28,6 +28,7 @@ class SiteResource extends JsonResource
         $settings = $this->resource['settings'];
 
         return [
+            'logo_url' => $settings->logo_image_url,
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [
                 'heading' => $settings->promo_heading,
