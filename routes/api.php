@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\SiteController;
@@ -26,6 +27,14 @@ Route::prefix('cart')->name('cart.')->group(function (): void {
     Route::post('items', [CartController::class, 'store'])->name('items.store');
     Route::patch('items/{cartItem}', [CartController::class, 'update'])->name('items.update');
     Route::delete('items/{cartItem}', [CartController::class, 'destroy'])->name('items.destroy');
+});
+
+// Every call here costs a request to the carrier, so the rate limit is the
+// shop's protection as much as CDEK's.
+Route::prefix('delivery/cdek')->name('delivery.cdek.')->middleware('throttle:60,1')->group(function (): void {
+    Route::get('cities', [DeliveryController::class, 'cities'])->name('cities');
+    Route::get('points', [DeliveryController::class, 'points'])->name('points');
+    Route::post('tariffs', [DeliveryController::class, 'tariffs'])->name('tariffs');
 });
 
 Route::middleware(Guard::Customer->middleware())->group(function (): void {

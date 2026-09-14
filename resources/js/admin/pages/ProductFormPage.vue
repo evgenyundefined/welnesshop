@@ -25,6 +25,7 @@ const form = reactive({
     status: 'published',
     price: '',
     stock: 0,
+    weight_grams: '',
 })
 
 onMounted(async () => {
@@ -44,6 +45,7 @@ onMounted(async () => {
             status: product.data.status,
             price: product.data.price_minor / 100,
             stock: product.data.stock,
+            weight_grams: product.data.weight_grams ?? '',
         })
     } else {
         form.category_id = categories.value[0]?.id ?? ''
@@ -68,6 +70,7 @@ async function submit() {
         status: form.status,
         price_minor: Math.round(Number(form.price) * 100),
         stock: Number(form.stock),
+        weight_grams: form.weight_grams === '' || form.weight_grams === null ? null : Number(form.weight_grams),
     }
 
     try {
@@ -127,6 +130,13 @@ async function submit() {
             <div>
                 <label for="stock" class="mb-1.5 block text-sm text-ink-500">Остаток</label>
                 <input id="stock" v-model="form.stock" type="number" min="0" required :class="input">
+            </div>
+
+            <div>
+                <label for="weight_grams" class="mb-1.5 block text-sm text-ink-500">Вес, граммы</label>
+                <input id="weight_grams" v-model="form.weight_grams" type="number" min="1" :class="input" placeholder="по умолчанию">
+                <p class="mt-1 text-xs text-ink-400">По нему СДЭК считает доставку. Пусто — берётся значение из настроек.</p>
+                <p v-if="errors.weight_grams" class="mt-1 text-sm text-red-700">{{ errors.weight_grams }}</p>
                 <p v-if="errors.stock" class="mt-1 text-sm text-red-700">{{ errors.stock }}</p>
             </div>
 

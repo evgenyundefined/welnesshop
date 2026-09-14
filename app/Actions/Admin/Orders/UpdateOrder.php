@@ -32,7 +32,15 @@ class UpdateOrder
         $order->fill([
             ...$attributes,
             'paid_at' => $status === OrderStatus::Paid ? $order->paid_at ?? now() : null,
-        ])->save();
+        ]);
+
+        // The lines are fixed once the order exists, so a changed delivery
+        // cost is the only thing that can move the total.
+        if ($order->isDirty('delivery_cost_minor')) {
+            $order->total_minor = $order->items()->sum('total_minor') + $order->delivery_cost_minor;
+        }
+
+        $order->save();
 
         return $order->load(['items', 'customer']);
     }

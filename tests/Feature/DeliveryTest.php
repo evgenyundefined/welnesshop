@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\DeliveryMethod;
 use App\Models\Customer;
 use App\Models\Order;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class DeliveryTest extends TestCase
@@ -18,26 +17,17 @@ class DeliveryTest extends TestCase
         'payment_method' => 'card',
     ];
 
-    #[DataProvider('deliveryMethods')]
-    public function test_checkout_records_the_chosen_delivery_method(string $method): void
+    public function test_checkout_records_a_courier_delivery_without_a_cost(): void
     {
         $customer = $this->signedInCustomer();
         $this->fillCart();
 
-        $this->postJson(route('api.checkout'), [...self::CHECKOUT, 'delivery_method' => $method])
+        $this->postJson(route('api.checkout'), [...self::CHECKOUT, 'delivery_method' => 'courier'])
             ->assertCreated()
-            ->assertJsonPath('data.delivery_method', $method);
+            ->assertJsonPath('data.delivery_method', 'courier')
+            ->assertJsonPath('data.delivery_cost_minor', 0);
 
-        $this->assertSame($method, $customer->orders()->sole()->delivery_method->value);
-    }
-
-    /** @return array<string, array{0: string}> */
-    public static function deliveryMethods(): array
-    {
-        return [
-            'courier' => [DeliveryMethod::Courier->value],
-            'transport company' => [DeliveryMethod::TransportCompany->value],
-        ];
+        $this->assertSame(DeliveryMethod::Courier, $customer->orders()->sole()->delivery_method);
     }
 
     public function test_the_delivery_method_survives_into_the_order_list_and_the_order_page(): void
@@ -47,16 +37,16 @@ class DeliveryTest extends TestCase
 
         $number = $this->postJson(route('api.checkout'), [
             ...self::CHECKOUT,
-            'delivery_method' => DeliveryMethod::TransportCompany->value,
+            'delivery_method' => DeliveryMethod::Courier->value,
         ])->assertCreated()->json('data.number');
 
         $this->getJson(route('api.orders.index'))
             ->assertOk()
-            ->assertJsonPath('data.0.delivery_method', DeliveryMethod::TransportCompany->value);
+            ->assertJsonPath('data.0.delivery_method', DeliveryMethod::Courier->value);
 
         $this->getJson(route('api.orders.show', $number))
             ->assertOk()
-            ->assertJsonPath('data.delivery_method', DeliveryMethod::TransportCompany->value);
+            ->assertJsonPath('data.delivery_method', DeliveryMethod::Courier->value);
     }
 
     public function test_checkout_refuses_an_unknown_or_missing_delivery_method(): void
@@ -86,10 +76,10 @@ class DeliveryTest extends TestCase
             'customer_id' => $customer->id,
             'lines' => [['product_id' => $product->id, 'quantity' => 1]],
             ...self::CHECKOUT,
-            'delivery_method' => DeliveryMethod::TransportCompany->value,
+            'delivery_method' => DeliveryMethod::Cdek->value,
         ])
             ->assertCreated()
-            ->assertJsonPath('data.delivery_method', DeliveryMethod::TransportCompany->value)
+            ->assertJsonPath('data.delivery_method', DeliveryMethod::Cdek->value)
             ->json('data');
 
         $this->putJson(route('admin.api.orders.update', ['order' => $order['id']]), [
@@ -134,7 +124,7 @@ class DeliveryTest extends TestCase
         }
 
         $this->assertSame('Курьером', DeliveryMethod::Courier->label());
-        $this->assertSame('Транспортной компанией', DeliveryMethod::TransportCompany->label());
+        $this->assertSame('СДЭК', DeliveryMethod::Cdek->label());
     }
 
     private function signedInCustomer(): Customer

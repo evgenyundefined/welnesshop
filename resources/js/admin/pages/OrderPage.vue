@@ -31,6 +31,7 @@ const form = reactive({
     payment_status: '',
     payment_method: '',
     delivery_method: '',
+    delivery_cost_minor: 0,
     contact_name: '',
     contact_email: '',
     contact_phone: '',
@@ -46,6 +47,7 @@ onMounted(async () => {
         payment_status: data.data.payment_status,
         payment_method: data.data.payment_method,
         delivery_method: data.data.delivery_method,
+        delivery_cost_minor: data.data.delivery_cost_minor,
         contact_name: data.data.contact_name,
         contact_email: data.data.contact_email,
         contact_phone: data.data.contact_phone,
@@ -156,6 +158,13 @@ async function remove() {
                     <option v-for="(label, value) in deliveryMethods" :key="value" :value="value">{{ label }}</option>
                 </select>
                 <p v-if="errors.delivery_method" class="mt-1 text-sm text-red-700">{{ errors.delivery_method }}</p>
+            </div>
+
+            <div>
+                <label for="delivery_cost" class="mb-1.5 block text-sm text-ink-500">Стоимость доставки, копейки</label>
+                <input id="delivery_cost" v-model="form.delivery_cost_minor" type="number" min="0" :class="input">
+                <p class="mt-1 text-xs text-ink-400">Для заказов СДЭК её посчитал перевозчик — правьте только вручную оформленные.</p>
+                <p v-if="errors.delivery_cost_minor" class="mt-1 text-sm text-red-700">{{ errors.delivery_cost_minor }}</p>
             </div>
 
             <div>

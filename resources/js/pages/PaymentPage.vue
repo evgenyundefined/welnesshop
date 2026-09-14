@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import api, { messageFrom } from '../api'
 import { formatMoney } from '../money'
 import { deliveryMethods } from '../labels'
@@ -8,6 +8,28 @@ import Thumbnail from '../components/Thumbnail.vue'
 const props = defineProps({ number: { type: String, required: true } })
 
 const order = ref(null)
+
+const deliverySummary = computed(() => {
+    const row = order.value
+
+    return [
+        deliveryMethods[row.delivery_method] ?? row.delivery_method,
+        row.cdek_tariff_name,
+        row.delivery_cost_minor ? formatMoney(row.delivery_cost_minor, row.currency) : null,
+        deliveryTerm.value || null,
+    ].filter(Boolean).join(' · ')
+})
+
+const deliveryTerm = computed(() => {
+    const min = order.value?.delivery_days_min
+    const max = order.value?.delivery_days_max
+
+    if (!min) {
+        return ''
+    }
+
+    return max && max !== min ? `${min}–${max} дн.` : `${min} дн.`
+})
 const payment = ref(null)
 const error = ref('')
 const pending = ref(false)
@@ -69,9 +91,9 @@ async function pay() {
             <dd>{{ order.contact_name }}, {{ order.contact_phone }}</dd>
 
             <dt class="text-ink-400">Доставка</dt>
-            <dd>{{ deliveryMethods[order.delivery_method] ?? order.delivery_method }}</dd>
+            <dd>{{ deliverySummary }}</dd>
 
-            <dt class="text-ink-400">Адрес доставки</dt>
+            <dt class="text-ink-400">{{ order.cdek_point_address ? 'Пункт выдачи' : 'Адрес доставки' }}</dt>
             <dd>{{ order.shipping_address }}</dd>
 
             <template v-if="order.comment">
@@ -96,6 +118,14 @@ async function pay() {
                         </td>
                         <td class="py-3 pr-4 whitespace-nowrap text-ink-500">{{ item.quantity }} шт.</td>
                         <td class="py-3 text-right font-semibold whitespace-nowrap">{{ formatMoney(item.total_minor, order.currency) }}</td>
+                    </tr>
+                    <tr v-if="order.delivery_cost_minor" class="border-t border-ink-200">
+                        <td class="py-3 pr-4" colspan="2">
+                            Доставка — {{ deliveryMethods[order.delivery_method] ?? order.delivery_method }}
+                        </td>
+                        <td class="py-3 text-right font-semibold whitespace-nowrap">
+                            {{ formatMoney(order.delivery_cost_minor, order.currency) }}
+                        </td>
                     </tr>
                 </tbody>
             </table>

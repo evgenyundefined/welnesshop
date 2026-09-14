@@ -22,7 +22,7 @@ class ResourceShapeTest extends TestCase
         'shipping_address' => 'Москва, Тверская 1',
         'comment' => 'Позвонить заранее',
         'payment_method' => 'sbp',
-        'delivery_method' => 'transport_company',
+        'delivery_method' => 'courier',
     ];
 
     public function test_the_category_payload_carries_every_documented_field(): void
@@ -76,6 +76,7 @@ class ResourceShapeTest extends TestCase
                     'price_minor' => 1_200_00,
                     'currency' => 'RUB',
                     'stock' => 7,
+                    'weight_grams' => null,
                     'is_available' => true,
                     'category' => [
                         'id' => $category->id,
@@ -300,7 +301,14 @@ class ResourceShapeTest extends TestCase
                     'status' => 'awaiting_payment',
                     'payment_status' => 'pending',
                     'payment_method' => 'sbp',
-                    'delivery_method' => 'transport_company',
+                    'delivery_method' => 'courier',
+                    'delivery_cost_minor' => 0,
+                    'delivery_days_min' => null,
+                    'delivery_days_max' => null,
+                    'cdek_city_name' => null,
+                    'cdek_tariff_name' => null,
+                    'cdek_point_code' => null,
+                    'cdek_point_address' => null,
                     'currency' => config('shop.currency'),
                     'total_minor' => 1_800_00,
                     'contact_name' => 'Иван Петров',

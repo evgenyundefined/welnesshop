@@ -31,6 +31,7 @@ class SaveProductRequest extends FormRequest
             'price_minor' => ['required', 'integer', 'min:1', 'max:'.PHP_INT_MAX],
             'currency' => ['nullable', 'string', 'size:3'],
             'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'weight_grams' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ];
     }
 
@@ -73,6 +74,7 @@ class SaveProductRequest extends FormRequest
                 ? Str::upper($this->string('currency')->toString())
                 : $config->string('shop.currency'),
             'stock' => $this->integer('stock'),
+            'weight_grams' => $this->filled('weight_grams') ? $this->integer('weight_grams') : null,
         ];
     }
 }

@@ -1,9 +1,9 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { session } from '../stores/session'
 import { formatMoney } from '../money'
-import { fieldErrorsFrom, messageFrom } from '../api'
+import api, { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
 import { deliveryMethods } from '../labels'
 
@@ -18,11 +18,133 @@ const form = reactive({
     shipping_address: '',
     comment: '',
     payment_method: 'card',
+    cdek_city_code: null,
+    cdek_destination: 'point',
+    cdek_point_code: null,
+    cdek_tariff_code: null,
 })
 
-const addressHint = computed(() => form.delivery_method === 'transport_company'
-    ? 'Город и терминал транспортной компании, куда доставить заказ.'
-    : 'Улица, дом, квартира — куда приехать курьеру.')
+const byCarrier = computed(() => form.delivery_method === 'cdek')
+const toPoint = computed(() => byCarrier.value && form.cdek_destination === 'point')
+const needsAddress = computed(() => !toPoint.value)
+
+const cityQuery = ref('')
+const cityName = ref('')
+const cities = ref([])
+const points = ref([])
+const tariffs = ref([])
+const loadingTariffs = ref(false)
+const deliveryMessage = ref('')
+
+const tariff = computed(() => tariffs.value.find((row) => row.code === form.cdek_tariff_code) ?? null)
+const deliveryCost = computed(() => (byCarrier.value ? (tariff.value?.cost_minor ?? 0) : 0))
+const payable = computed(() => cart.value.total_minor + deliveryCost.value)
+
+function term(row) {
+    if (row.days_min === null) {
+        return ''
+    }
+
+    return row.days_max && row.days_max !== row.days_min
+        ? `${row.days_min}–${row.days_max} дн.`
+        : `${row.days_min} дн.`
+}
+
+let citySearchTimer
+
+watch(cityQuery, (value) => {
+    clearTimeout(citySearchTimer)
+
+    if (value.trim().length < 2 || value === cityName.value) {
+        cities.value = []
+
+        return
+    }
+
+    citySearchTimer = setTimeout(async () => {
+        try {
+            const { data } = await api.get('/delivery/cdek/cities', { params: { query: value.trim() } })
+            cities.value = data.data
+        } catch (e) {
+            deliveryMessage.value = messageFrom(e, 'Не удалось найти город')
+        }
+    }, 350)
+})
+
+async function chooseCity(city) {
+    form.cdek_city_code = city.code
+    cityName.value = city.full_name
+    cityQuery.value = city.full_name
+    cities.value = []
+    form.cdek_point_code = null
+    points.value = []
+
+    if (toPoint.value) {
+        await loadPoints()
+    }
+
+    await loadTariffs()
+}
+
+async function loadPoints() {
+    if (!form.cdek_city_code) {
+        return
+    }
+
+    try {
+        const { data } = await api.get('/delivery/cdek/points', { params: { city_code: form.cdek_city_code } })
+        points.value = data.data
+    } catch (e) {
+        points.value = []
+        deliveryMessage.value = messageFrom(e, 'Не удалось получить пункты выдачи')
+    }
+}
+
+async function loadTariffs() {
+    form.cdek_tariff_code = null
+    tariffs.value = []
+
+    if (!form.cdek_city_code || (toPoint.value && !form.cdek_point_code)) {
+        return
+    }
+
+    deliveryMessage.value = ''
+    loadingTariffs.value = true
+
+    try {
+        const { data } = await api.post('/delivery/cdek/tariffs', {
+            city_code: form.cdek_city_code,
+            destination: form.cdek_destination,
+            point_code: form.cdek_point_code,
+        })
+        tariffs.value = data.data
+        form.cdek_tariff_code = tariffs.value[0]?.code ?? null
+
+        if (!tariffs.value.length) {
+            deliveryMessage.value = 'Для этого направления СДЭК не предложил ни одного тарифа.'
+        }
+    } catch (e) {
+        deliveryMessage.value = messageFrom(e, 'Не удалось рассчитать доставку')
+    } finally {
+        loadingTariffs.value = false
+    }
+}
+
+watch(() => form.cdek_destination, async () => {
+    if (toPoint.value && !points.value.length) {
+        await loadPoints()
+    }
+
+    await loadTariffs()
+})
+
+watch(() => form.cdek_point_code, loadTariffs)
+
+watch(() => form.delivery_method, () => {
+    deliveryMessage.value = ''
+    tariffs.value = []
+    form.cdek_tariff_code = null
+})
 
 const errors = ref({})
 const message = ref('')
@@ -83,10 +205,91 @@ async function submit() {
             </select>
         </FormField>
 
-        <div class="sm:col-span-2">
+        <div v-if="byCarrier" class="space-y-4 rounded-lg border border-ink-200 bg-ink-50 p-4 sm:col-span-2">
+            <div class="relative">
+                <FormField id="cdek_city" label="Город доставки" :error="errors.cdek_city_code">
+                    <input
+                        id="cdek_city"
+                        v-model="cityQuery"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Начните вводить название"
+                        :class="inputClass"
+                    >
+                </FormField>
+
+                <ul
+                    v-if="cities.length"
+                    class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-ink-200 bg-white shadow-lg"
+                >
+                    <li v-for="city in cities" :key="city.code">
+                        <button
+                            type="button"
+                            class="block w-full px-3 py-2 text-left text-sm hover:bg-ink-100"
+                            @click="chooseCity(city)"
+                        >
+                            {{ city.full_name }}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <fieldset>
+                <legend class="mb-1.5 text-sm text-ink-500">Куда доставить</legend>
+                <div class="flex flex-wrap gap-4 text-sm">
+                    <label class="flex items-center gap-2">
+                        <input v-model="form.cdek_destination" type="radio" value="point" class="accent-gold-500">
+                        В пункт выдачи
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input v-model="form.cdek_destination" type="radio" value="door" class="accent-gold-500">
+                        До двери
+                    </label>
+                </div>
+            </fieldset>
+
+            <FormField v-if="toPoint" id="cdek_point" label="Пункт выдачи" :error="errors.cdek_point_code">
+                <select id="cdek_point" v-model="form.cdek_point_code" :class="inputClass" :disabled="!points.length">
+                    <option :value="null">
+                        {{ points.length ? 'Выберите пункт' : 'Сначала выберите город' }}
+                    </option>
+                    <option v-for="point in points" :key="point.code" :value="point.code">
+                        {{ point.address }}<template v-if="point.work_time"> — {{ point.work_time }}</template>
+                    </option>
+                </select>
+            </FormField>
+
+            <div v-if="loadingTariffs" class="text-sm text-ink-400">Считаем доставку…</div>
+
+            <fieldset v-else-if="tariffs.length">
+                <legend class="mb-1.5 text-sm text-ink-500">Тариф СДЭК</legend>
+                <div class="space-y-2">
+                    <label
+                        v-for="row in tariffs"
+                        :key="row.code"
+                        class="flex cursor-pointer items-center gap-3 rounded-lg border bg-white px-3 py-2 text-sm"
+                        :class="form.cdek_tariff_code === row.code ? 'border-gold-500' : 'border-ink-200'"
+                    >
+                        <input v-model="form.cdek_tariff_code" type="radio" :value="row.code" class="accent-gold-500">
+                        <span class="flex-1">
+                            {{ row.name }}
+                            <span v-if="term(row)" class="text-ink-400">· {{ term(row) }}</span>
+                        </span>
+                        <span class="font-semibold whitespace-nowrap">{{ formatMoney(row.cost_minor, cart.currency) }}</span>
+                    </label>
+                </div>
+                <p v-if="errors.cdek_tariff_code" class="mt-1 text-sm text-red-700">{{ errors.cdek_tariff_code }}</p>
+            </fieldset>
+
+            <p v-if="deliveryMessage" class="text-sm text-red-700">{{ deliveryMessage }}</p>
+        </div>
+
+        <div v-if="needsAddress" class="sm:col-span-2">
             <FormField id="shipping_address" label="Адрес доставки" :error="errors.shipping_address">
                 <textarea id="shipping_address" v-model="form.shipping_address" required rows="3" :class="inputClass"></textarea>
-                <p class="mt-1 text-xs text-ink-400">{{ addressHint }}</p>
+                <p class="mt-1 text-xs text-ink-400">
+                    {{ byCarrier ? 'Улица, дом, квартира — куда курьер СДЭК привезёт заказ.' : 'Улица, дом, квартира — куда приехать курьеру.' }}
+                </p>
             </FormField>
         </div>
 
@@ -99,7 +302,13 @@ async function submit() {
         <p v-if="message" class="text-sm text-red-700 sm:col-span-2">{{ message }}</p>
 
         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-ink-200 pt-4 sm:col-span-2">
-            <span class="text-lg font-bold">К оплате: {{ formatMoney(cart.total_minor, cart.currency) }}</span>
+            <div>
+                <span class="text-lg font-bold">К оплате: {{ formatMoney(payable, cart.currency) }}</span>
+                <p v-if="deliveryCost" class="text-xs text-ink-400">
+                    Товары {{ formatMoney(cart.total_minor, cart.currency) }} + доставка
+                    {{ formatMoney(deliveryCost, cart.currency) }}
+                </p>
+            </div>
             <button
                 type="submit"
                 class="rounded-lg bg-gold-400 px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-300 disabled:bg-ink-200 disabled:text-ink-400"

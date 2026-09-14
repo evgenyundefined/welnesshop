@@ -38,7 +38,7 @@ export const paymentMethods = {
 
 export const deliveryMethods = {
     courier: 'Курьером',
-    transport_company: 'Транспортной компанией',
+    cdek: 'СДЭК',
 }
 
 export const productStatuses = {

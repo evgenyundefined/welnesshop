@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'price_minor',
     'currency',
     'stock',
+    'weight_grams',
 ])]
 #[RouteKey('slug')]
 class Product extends Model
@@ -88,6 +89,7 @@ class Product extends Model
         return [
             'status' => ProductStatus::class,
             'price_minor' => 'integer',
+            'weight_grams' => 'integer',
             'stock' => 'integer',
             'views' => 'integer',
         ];

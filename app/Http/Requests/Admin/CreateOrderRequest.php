@@ -24,6 +24,7 @@ class CreateOrderRequest extends FormRequest
             'contact_phone' => ['required', 'string', 'between:5,32'],
             'delivery_method' => ['required', Rule::enum(DeliveryMethod::class)],
             'shipping_address' => ['required', 'string', 'between:5,1000'],
+            'delivery_cost_minor' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
         ];
@@ -46,6 +47,7 @@ class CreateOrderRequest extends FormRequest
             'contact_phone' => trim($this->string('contact_phone')->toString()),
             'delivery_method' => $this->enum('delivery_method', DeliveryMethod::class),
             'shipping_address' => trim($this->string('shipping_address')->toString()),
+            'delivery_cost_minor' => $this->integer('delivery_cost_minor'),
             'comment' => $this->filled('comment') ? trim($this->string('comment')->toString()) : null,
             'payment_method' => $this->enum('payment_method', PaymentMethod::class),
         ];

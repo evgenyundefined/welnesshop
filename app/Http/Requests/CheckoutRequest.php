@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CdekDestination;
 use App\Enums\DeliveryMethod;
 use App\Enums\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,9 +19,42 @@ class CheckoutRequest extends FormRequest
             'contact_email' => ['required', 'string', 'email', 'max:255'],
             'contact_phone' => ['required', 'string', 'between:5,32'],
             'delivery_method' => ['required', Rule::enum(DeliveryMethod::class)],
-            'shipping_address' => ['required', 'string', 'between:5,1000'],
+            // A pickup point is an address of its own, so the buyer is only
+            // asked to type one when the parcel is coming to them.
+            'shipping_address' => [
+                Rule::requiredIf(fn (): bool => ! $this->deliversToPoint()),
+                'nullable',
+                'string',
+                'between:5,1000',
+            ],
+            'cdek_city_code' => [Rule::requiredIf($this->deliversByCarrier()), 'integer', 'min:1'],
+            'cdek_destination' => [Rule::requiredIf($this->deliversByCarrier()), Rule::enum(CdekDestination::class)],
+            'cdek_tariff_code' => [Rule::requiredIf($this->deliversByCarrier()), 'integer', 'min:1'],
+            'cdek_point_code' => [Rule::requiredIf(fn (): bool => $this->deliversToPoint()), 'nullable', 'string', 'max:32'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
+        ];
+    }
+
+    public function deliversByCarrier(): bool
+    {
+        return $this->enum('delivery_method', DeliveryMethod::class)?->isCarrier() === true;
+    }
+
+    public function deliversToPoint(): bool
+    {
+        return $this->deliversByCarrier()
+            && $this->enum('cdek_destination', CdekDestination::class) === CdekDestination::Point;
+    }
+
+    /** @return array<string, mixed> */
+    public function deliverySelection(): array
+    {
+        return [
+            'cdek_city_code' => $this->integer('cdek_city_code'),
+            'cdek_destination' => $this->string('cdek_destination')->toString(),
+            'cdek_tariff_code' => $this->integer('cdek_tariff_code'),
+            'cdek_point_code' => $this->filled('cdek_point_code') ? $this->string('cdek_point_code')->toString() : null,
         ];
     }
 

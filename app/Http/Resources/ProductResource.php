@@ -28,6 +28,7 @@ class ProductResource extends JsonResource
             'price_minor' => $this->resource->price_minor,
             'currency' => $this->resource->currency,
             'stock' => $this->resource->stock,
+            'weight_grams' => $this->resource->weight_grams,
             'is_available' => $this->resource->isAvailable(),
             'category' => new CategoryResource($this->whenLoaded('category')),
             'cover' => $this->whenLoaded(

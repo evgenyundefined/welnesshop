@@ -24,6 +24,10 @@ return [
 
     'footer_products' => (int) env('SHOP_FOOTER_PRODUCTS', 10),
 
+    // Вес для товара, у которого он не заполнен: перевозчик не считает
+    // невесомую посылку, а нулевой вес сорвал бы расчёт целиком.
+    'default_product_weight_grams' => (int) env('SHOP_DEFAULT_PRODUCT_WEIGHT_GRAMS', 300),
+
     'cart_session_key' => 'cart_token',
 
     'order_number_prefix' => env('SHOP_ORDER_NUMBER_PREFIX', 'WLN'),

@@ -45,7 +45,7 @@ class RecordOrder
                 'status' => OrderStatus::AwaitingPayment,
                 'payment_status' => PaymentStatus::Pending,
                 'currency' => $this->config->string('shop.currency'),
-                'total_minor' => $lines->sum('total_minor'),
+                'total_minor' => $lines->sum('total_minor') + (int) ($details['delivery_cost_minor'] ?? 0),
             ]);
 
             $lines->each(function (array $line) use ($order, $products): void {

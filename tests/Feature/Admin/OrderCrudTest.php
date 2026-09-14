@@ -110,7 +110,7 @@ class OrderCrudTest extends TestCase
             'contact_phone' => '+79990000000',
             'shipping_address' => 'Москва, Тверская 1',
             'payment_method' => PaymentMethod::Invoice->value,
-            'delivery_method' => DeliveryMethod::TransportCompany->value,
+            'delivery_method' => DeliveryMethod::Cdek->value,
         ])
             ->assertCreated()
             ->assertJsonPath('data.customer_id', $customer->id)
