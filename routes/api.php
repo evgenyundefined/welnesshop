@@ -9,6 +9,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\YooKassaWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('site', SiteController::class)->name('site');
@@ -28,6 +29,10 @@ Route::prefix('cart')->name('cart.')->group(function (): void {
     Route::patch('items/{cartItem}', [CartController::class, 'update'])->name('items.update');
     Route::delete('items/{cartItem}', [CartController::class, 'destroy'])->name('items.destroy');
 });
+
+// Called by ЮKassa, not by a browser: no session, no CSRF token, and the body
+// is only a hint — the controller verifies it against the acquirer.
+Route::post('payments/yookassa/webhook', YooKassaWebhookController::class)->name('payments.yookassa.webhook');
 
 // Every call here costs a request to the carrier, so the rate limit is the
 // shop's protection as much as CDEK's.

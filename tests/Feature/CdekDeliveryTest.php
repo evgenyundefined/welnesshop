@@ -278,6 +278,26 @@ class CdekDeliveryTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_a_courier_order_tolerates_the_empty_carrier_fields_the_form_posts(): void
+    {
+        $this->signIn();
+        $this->fillCart();
+
+        // The checkout form submits every field it has, so a courier order
+        // arrives with the CDEK ones present and empty.
+        $this->postJson(route(self::CHECKOUT), [
+            ...self::CONTACTS,
+            'delivery_method' => 'courier',
+            'shipping_address' => 'Москва, Тверская 1',
+            'cdek_city_code' => null,
+            'cdek_destination' => null,
+            'cdek_point_code' => null,
+            'cdek_tariff_code' => null,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.delivery_cost_minor', 0);
+    }
+
     public function test_the_carrier_fields_are_required_only_for_a_carrier_order(): void
     {
         $this->signIn();

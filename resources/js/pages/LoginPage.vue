@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { session } from '../stores/session'
 import { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
+import PasswordInput from '../components/PasswordInput.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -42,7 +43,13 @@ async function submit() {
         </FormField>
 
         <FormField id="password" label="Пароль" :error="errors.password">
-            <input id="password" v-model="form.password" type="password" autocomplete="current-password" required :class="inputClass">
+            <PasswordInput
+                id="password"
+                v-model="form.password"
+                autocomplete="current-password"
+                required
+                :class="inputClass"
+            />
         </FormField>
 
         <label class="flex items-center gap-2 text-sm text-ink-500">

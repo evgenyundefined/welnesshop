@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // only arrive in the forwarded headers, and HTTPS detection drives both
         // secure cookies and generated URLs.
         $middleware->trustProxies(at: '*');
+
+        // The acquirer posts server to server and has no session to carry a
+        // token; the notification is verified against the acquirer instead.
+        $middleware->validateCsrfTokens(except: ['api/payments/*/webhook']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

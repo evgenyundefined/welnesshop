@@ -99,13 +99,13 @@ class CustomerAdminTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.name', 'Иван Петров')
             ->assertJsonPath('data.email', 'ivan.new@example.com')
-            ->assertJsonPath('data.phone', '+79991112233');
+            ->assertJsonPath('data.phone', '+7 999 111 22 33');
 
         $this->assertDatabaseHas('customers', [
             'id' => $customer->id,
             'name' => 'Иван Петров',
             'email' => 'ivan.new@example.com',
-            'phone' => '+79991112233',
+            'phone' => '+7 999 111 22 33',
         ]);
     }
 
@@ -152,7 +152,7 @@ class CustomerAdminTest extends TestCase
         $this->putJson(route('admin.api.customers.update', $customer), [
             'name' => 'Иван',
             'email' => 'taken@example.com',
-            'password' => 'short',
+            'password' => '123',
         ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email', 'password']);

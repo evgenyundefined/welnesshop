@@ -18,6 +18,21 @@ abstract class TestCase extends BaseTestCase
 {
     use RefreshDatabase;
 
+    /**
+     * The suite must not depend on whoever ran it having credentials in their
+     * .env: every test starts with both integrations switched off and turns on
+     * the one it is about.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config()->set('services.yookassa.shop_id', null);
+        config()->set('services.yookassa.secret_key', null);
+        config()->set('services.cdek.account', null);
+        config()->set('services.cdek.password', null);
+    }
+
     protected function makeProduct(array $attributes = []): Product
     {
         return Product::factory()->for(Category::factory())->create($attributes);

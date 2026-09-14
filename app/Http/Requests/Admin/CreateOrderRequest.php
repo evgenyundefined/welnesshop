@@ -4,6 +4,8 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\DeliveryMethod;
 use App\Enums\PaymentMethod;
+use App\Http\Requests\Concerns\NormalisesPhone;
+use App\Support\PhoneNumber;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -11,6 +13,13 @@ use Illuminate\Validation\Rule;
 
 class CreateOrderRequest extends FormRequest
 {
+    use NormalisesPhone;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalisePhone('contact_phone');
+    }
+
     /** @return array<string, list<mixed>> */
     public function rules(Config $config): array
     {
@@ -21,7 +30,7 @@ class CreateOrderRequest extends FormRequest
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:'.$config->integer('shop.max_item_quantity')],
             'contact_name' => ['required', 'string', 'between:2,255'],
             'contact_email' => ['required', 'string', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'between:5,32'],
+            'contact_phone' => ['required', 'string', 'regex:'.PhoneNumber::PATTERN],
             'delivery_method' => ['required', Rule::enum(DeliveryMethod::class)],
             'shipping_address' => ['required', 'string', 'between:5,1000'],
             'delivery_cost_minor' => ['nullable', 'integer', 'min:0', 'max:100000000'],
@@ -44,7 +53,7 @@ class CreateOrderRequest extends FormRequest
         return [
             'contact_name' => trim($this->string('contact_name')->toString()),
             'contact_email' => Str::lower(trim($this->string('contact_email')->toString())),
-            'contact_phone' => trim($this->string('contact_phone')->toString()),
+            'contact_phone' => $this->string('contact_phone')->toString(),
             'delivery_method' => $this->enum('delivery_method', DeliveryMethod::class),
             'shipping_address' => trim($this->string('shipping_address')->toString()),
             'delivery_cost_minor' => $this->integer('delivery_cost_minor'),

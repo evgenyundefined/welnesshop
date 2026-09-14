@@ -9,7 +9,10 @@ use App\Payments\PaymentIntent;
 
 class RequestPayment
 {
-    public function __construct(private readonly PaymentGateway $gateway) {}
+    public function __construct(
+        private readonly PaymentGateway $gateway,
+        private readonly ApplyPaymentResult $applyPaymentResult,
+    ) {}
 
     /**
      * @throws OrderNotPayable
@@ -22,7 +25,7 @@ class RequestPayment
 
         $intent = $this->gateway->createPayment($order);
 
-        $order->update(['payment_status' => $intent->status]);
+        ($this->applyPaymentResult)($order, $intent);
 
         return $intent;
     }

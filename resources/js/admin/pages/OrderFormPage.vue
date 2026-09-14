@@ -14,6 +14,7 @@ import {
     th,
 } from '../ui'
 import { formatMoney } from '../../money'
+import PhoneInput from '../../components/PhoneInput.vue'
 
 const router = useRouter()
 const customers = ref([])
@@ -151,7 +152,7 @@ async function submit() {
 
                 <div>
                     <label for="contact_phone" class="mb-1.5 block text-sm text-ink-500">Телефон</label>
-                    <input id="contact_phone" v-model="form.contact_phone" type="tel" required :class="input">
+                    <PhoneInput id="contact_phone" v-model="form.contact_phone" required :class="input" />
                     <p v-if="errors.contact_phone" class="mt-1 text-sm text-red-700">{{ errors.contact_phone }}</p>
                 </div>
 

@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { session } from '../stores/session'
 import { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
+import PasswordInput from '../components/PasswordInput.vue'
+import PhoneInput from '../components/PhoneInput.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -46,22 +48,28 @@ async function submit() {
         </FormField>
 
         <FormField id="phone" label="Телефон" :error="errors.phone">
-            <input id="phone" v-model="form.phone" type="tel" autocomplete="tel" :class="inputClass">
+            <PhoneInput id="phone" v-model="form.phone" :class="inputClass" />
         </FormField>
 
         <FormField id="password" label="Пароль" :error="errors.password">
-            <input id="password" v-model="form.password" type="password" autocomplete="new-password" required :class="inputClass">
-        </FormField>
-
-        <FormField id="password_confirmation" label="Повторите пароль">
-            <input
-                id="password_confirmation"
-                v-model="form.password_confirmation"
-                type="password"
+            <PasswordInput
+                id="password"
+                v-model="form.password"
                 autocomplete="new-password"
                 required
                 :class="inputClass"
-            >
+            />
+            <p class="mt-1 text-xs text-ink-400">Не короче 5 символов.</p>
+        </FormField>
+
+        <FormField id="password_confirmation" label="Повторите пароль">
+            <PasswordInput
+                id="password_confirmation"
+                v-model="form.password_confirmation"
+                autocomplete="new-password"
+                required
+                :class="inputClass"
+            />
         </FormField>
 
         <p v-if="message" class="text-sm text-red-700">{{ message }}</p>

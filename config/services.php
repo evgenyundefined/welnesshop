@@ -44,6 +44,15 @@ return [
         ],
     ],
 
+    // ЮKassa. Тестовый магазин заводится в личном кабинете, у него свои
+    // shop_id и секретный ключ, платежи на нём не списывают деньги.
+    'yookassa' => [
+        'base_url' => rtrim((string) env('YOOKASSA_BASE_URL', 'https://api.yookassa.ru/v3'), '/'),
+        'shop_id' => env('YOOKASSA_SHOP_ID'),
+        'secret_key' => env('YOOKASSA_SECRET_KEY'),
+        'timeout' => (int) env('YOOKASSA_TIMEOUT', 15),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

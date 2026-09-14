@@ -34,6 +34,11 @@ class RequestPaymentTest extends TestCase
     {
         $this->app->bind(PaymentGateway::class, fn (): PaymentGateway => new class implements PaymentGateway
         {
+            public function isLive(): bool
+            {
+                return true;
+            }
+
             public function createPayment(Order $order): PaymentIntent
             {
                 return new PaymentIntent(

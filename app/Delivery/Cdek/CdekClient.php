@@ -27,8 +27,10 @@ class CdekClient
 
     public function isConfigured(): bool
     {
-        return $this->config->string('services.cdek.account') !== ''
-            && $this->config->string('services.cdek.password') !== ''
+        // Read untyped: an absent variable is null, and string() would throw
+        // on the very case this method exists to answer.
+        return (string) $this->config->get('services.cdek.account') !== ''
+            && (string) $this->config->get('services.cdek.password') !== ''
             && $this->config->get('services.cdek.from_city_code') !== null;
     }
 
@@ -168,8 +170,8 @@ class CdekClient
             try {
                 $response = $this->request()->asForm()->post('/oauth/token?parameters', [
                     'grant_type' => 'client_credentials',
-                    'client_id' => $this->config->string('services.cdek.account'),
-                    'client_secret' => $this->config->string('services.cdek.password'),
+                    'client_id' => (string) $this->config->get('services.cdek.account'),
+                    'client_secret' => (string) $this->config->get('services.cdek.password'),
                 ]);
             } catch (Throwable $e) {
                 throw CdekUnavailable::because('Не удалось получить токен СДЭК: '.$e->getMessage());

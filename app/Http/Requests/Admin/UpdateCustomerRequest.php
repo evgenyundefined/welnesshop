@@ -2,12 +2,22 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Http\Requests\Concerns\NormalisesPhone;
+use App\Support\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UpdateCustomerRequest extends FormRequest
 {
+    use NormalisesPhone;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalisePhone('phone');
+    }
+
     /** @return array<string, list<mixed>> */
     public function rules(): array
     {
@@ -20,24 +30,8 @@ class UpdateCustomerRequest extends FormRequest
                 'max:255',
                 Rule::unique('customers', 'email')->ignore($this->route('customer')),
             ],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'password' => [
-                'nullable',
-                'string',
-                'min:8',
-                'max:255',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[0-9]/',
-            ],
-        ];
-    }
-
-    /** @return array<string, string> */
-    public function messages(): array
-    {
-        return [
-            'password.regex' => 'Пароль должен содержать заглавную букву, строчную букву и цифру.',
+            'phone' => ['nullable', 'string', 'regex:'.PhoneNumber::PATTERN],
+            'password' => ['nullable', 'string', 'max:255', Password::defaults()],
         ];
     }
 

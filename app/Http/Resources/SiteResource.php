@@ -17,7 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
  *     settings: SiteSetting,
  *     pages: Collection<int, Page>,
  *     categories: Collection<int, Category>,
- *     products: Collection<int, Product>
+ *     products: Collection<int, Product>,
+ *     online_payment: bool
  * } $resource
  */
 class SiteResource extends JsonResource
@@ -28,6 +29,7 @@ class SiteResource extends JsonResource
         $settings = $this->resource['settings'];
 
         return [
+            'online_payment' => $this->resource['online_payment'],
             'logo_url' => $settings->logo_image_url,
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [

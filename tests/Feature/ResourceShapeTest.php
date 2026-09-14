@@ -313,7 +313,7 @@ class ResourceShapeTest extends TestCase
                     'total_minor' => 1_800_00,
                     'contact_name' => 'Иван Петров',
                     'contact_email' => 'ivan@example.com',
-                    'contact_phone' => '+79990000000',
+                    'contact_phone' => '+7 999 000 00 00',
                     'shipping_address' => 'Москва, Тверская 1',
                     'comment' => 'Позвонить заранее',
                     'paid_at' => null,
@@ -393,7 +393,7 @@ class ResourceShapeTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.contact_name', 'Иван Петров')
             ->assertJsonPath('data.contact_email', 'ivan@example.com')
-            ->assertJsonPath('data.contact_phone', '+79990000000')
+            ->assertJsonPath('data.contact_phone', '+7 999 000 00 00')
             ->assertJsonPath('data.shipping_address', 'Москва, Тверская 1');
     }
 

@@ -7,6 +7,7 @@ use App\Actions\Site\ListFooterProducts;
 use App\Actions\Site\ListPages;
 use App\Actions\Site\LoadSiteSettings;
 use App\Http\Resources\SiteResource;
+use App\Payments\PaymentGateway;
 
 class SiteController extends Controller
 {
@@ -15,12 +16,14 @@ class SiteController extends Controller
         ListPages $listPages,
         ListCategories $listCategories,
         ListFooterProducts $listFooterProducts,
+        PaymentGateway $gateway,
     ): SiteResource {
         return new SiteResource([
             'settings' => $loadSiteSettings(),
             'pages' => $listPages(),
             'categories' => $listCategories(),
             'products' => $listFooterProducts(),
+            'online_payment' => $gateway->isLive(),
         ]);
     }
 }

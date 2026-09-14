@@ -4,6 +4,7 @@ import api, { fieldErrorsFrom, messageFrom } from '../api'
 import Modal from '../components/Modal.vue'
 import Pagination from '../components/Pagination.vue'
 import { card, dangerButton, ghostButton, input, primaryButton, td, th } from '../ui'
+import PhoneInput from '../../components/PhoneInput.vue'
 
 const customers = ref([])
 const meta = ref({ current_page: 1, last_page: 1, total: 0 })
@@ -179,7 +180,7 @@ async function toggleBlock(customer) {
 
                 <div>
                     <label for="c-phone" class="mb-1.5 block text-sm text-ink-500">Телефон</label>
-                    <input id="c-phone" v-model="form.phone" type="tel" :class="input">
+                    <PhoneInput id="c-phone" v-model="form.phone" :class="input" />
                     <p v-if="formErrors.phone" class="mt-1 text-sm text-red-700">{{ formErrors.phone }}</p>
                 </div>
 

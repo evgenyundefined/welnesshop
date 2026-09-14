@@ -28,6 +28,10 @@ return [
     // невесомую посылку, а нулевой вес сорвал бы расчёт целиком.
     'default_product_weight_grams' => (int) env('SHOP_DEFAULT_PRODUCT_WEIGHT_GRAMS', 300),
 
+    // Требования к паролю задаются здесь и применяются везде через
+    // Password::defaults() — и при регистрации, и при смене из админки.
+    'password_min_length' => (int) env('SHOP_PASSWORD_MIN_LENGTH', 5),
+
     'cart_session_key' => 'cart_token',
 
     'order_number_prefix' => env('SHOP_ORDER_NUMBER_PREFIX', 'WLN'),

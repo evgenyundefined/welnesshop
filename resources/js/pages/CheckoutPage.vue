@@ -5,6 +5,7 @@ import { session } from '../stores/session'
 import { formatMoney } from '../money'
 import api, { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
+import PhoneInput from '../components/PhoneInput.vue'
 import { deliveryMethods } from '../labels'
 
 const router = useRouter()
@@ -188,7 +189,7 @@ async function submit() {
         </FormField>
 
         <FormField id="contact_phone" label="Телефон" :error="errors.contact_phone">
-            <input id="contact_phone" v-model="form.contact_phone" type="tel" required :class="inputClass">
+            <PhoneInput id="contact_phone" v-model="form.contact_phone" required :class="inputClass" />
         </FormField>
 
         <FormField id="payment_method" label="Способ оплаты" :error="errors.payment_method">

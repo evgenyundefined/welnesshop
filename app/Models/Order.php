@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'status',
     'payment_status',
     'payment_method',
+    'payment_provider',
+    'payment_external_id',
     'delivery_method',
     'delivery_cost_minor',
     'cdek_city_code',

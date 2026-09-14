@@ -2,36 +2,29 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalisesPhone;
+use App\Support\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
+    use NormalisesPhone;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalisePhone('phone');
+    }
+
     /** @return array<string, list<string>> */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'between:2,255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:customers,email'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'max:255',
-                'confirmed',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[0-9]/',
-            ],
-        ];
-    }
-
-    /** @return array<string, string> */
-    public function messages(): array
-    {
-        return [
-            'password.regex' => 'Пароль должен содержать заглавную букву, строчную букву и цифру.',
+            'phone' => ['nullable', 'string', 'regex:'.PhoneNumber::PATTERN],
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::defaults()],
         ];
     }
 

@@ -5,6 +5,7 @@ const state = reactive({
     banner: null,
     promo: null,
     disclaimer: null,
+    online_payment: false,
     logo_url: null,
     contacts_html: null,
     info_html: null,

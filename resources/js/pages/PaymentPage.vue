@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import api, { messageFrom } from '../api'
 import { formatMoney } from '../money'
 import { deliveryMethods } from '../labels'
+import { site } from '../stores/site'
 import Thumbnail from '../components/Thumbnail.vue'
 
 const props = defineProps({ number: { type: String, required: true } })
@@ -75,7 +76,10 @@ async function pay() {
     <div v-if="order" class="space-y-5">
         <h1 class="text-2xl font-bold tracking-tight">Оплата заказа {{ order.number }}</h1>
 
-        <p class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p
+            v-if="!site.state.online_payment"
+            class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
             Платёжный провайдер ещё не подключён. Заказ создан и зарезервирован, оплата станет доступна после
             подключения платёжного шлюза.
         </p>

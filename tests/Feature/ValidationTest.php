@@ -178,11 +178,8 @@ class ValidationTest extends TestCase
             'malformed email' => [['email' => 'ivan(at)example.com']],
             'long email' => [['email' => str_repeat('a', 250).'@example.com']],
             'long phone' => [['phone' => str_repeat('9', 33)]],
-            'short password' => [['password' => 'Pass1', 'password_confirmation' => 'Pass1']],
+            'short password' => [['password' => 'abcd', 'password_confirmation' => 'abcd']],
             'long password' => [['password' => str_repeat('Aa1', 90), 'password_confirmation' => str_repeat('Aa1', 90)]],
-            'no uppercase' => [['password' => 'password1', 'password_confirmation' => 'password1']],
-            'no lowercase' => [['password' => 'PASSWORD1', 'password_confirmation' => 'PASSWORD1']],
-            'no digit' => [['password' => 'PasswordX', 'password_confirmation' => 'PasswordX']],
         ];
     }
 
@@ -206,18 +203,20 @@ class ValidationTest extends TestCase
         ];
     }
 
-    public function test_registration_explains_the_password_policy(): void
+    public function test_registration_only_asks_the_password_to_be_long_enough(): void
     {
         $this->postJson(route('api.register'), [
             ...self::REGISTRATION,
-            'password' => 'passwordonly',
-            'password_confirmation' => 'passwordonly',
-        ])
-            ->assertUnprocessable()
-            ->assertJsonPath(
-                'errors.password.0',
-                'Пароль должен содержать заглавную букву, строчную букву и цифру.',
-            );
+            'password' => 'abcd',
+            'password_confirmation' => 'abcd',
+        ])->assertUnprocessable()->assertJsonValidationErrors('password');
+
+        // Five plain lowercase letters are enough: no case or digit is demanded.
+        $this->postJson(route('api.register'), [
+            ...self::REGISTRATION,
+            'password' => 'parol',
+            'password_confirmation' => 'parol',
+        ])->assertCreated();
     }
 
     public function test_registration_accepts_an_explicitly_empty_phone(): void

@@ -13,6 +13,11 @@ final readonly class PendingPaymentGateway implements PaymentGateway
 {
     public const string PROVIDER = 'none';
 
+    public function isLive(): bool
+    {
+        return false;
+    }
+
     public function createPayment(Order $order): PaymentIntent
     {
         return new PaymentIntent(
