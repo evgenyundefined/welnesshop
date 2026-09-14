@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\Site\DescribeIntegrations;
 use App\Actions\Admin\Site\RemoveBannerImage;
 use App\Actions\Admin\Site\RemoveLogoImage;
 use App\Actions\Admin\Site\SaveBannerImage;
@@ -16,9 +17,9 @@ use App\Http\Resources\Admin\SiteSettingResource;
 
 class SiteController extends Controller
 {
-    public function show(LoadSiteSettings $loadSiteSettings): SiteSettingResource
+    public function show(LoadSiteSettings $loadSiteSettings, DescribeIntegrations $describeIntegrations): SiteSettingResource
     {
-        return new SiteSettingResource($loadSiteSettings());
+        return (new SiteSettingResource($loadSiteSettings()))->additional(['integrations' => $describeIntegrations()]);
     }
 
     public function update(SaveSiteSettingsRequest $request, SaveSiteSettings $saveSiteSettings): SiteSettingResource

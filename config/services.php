@@ -1,5 +1,9 @@
 <?php
 
+// Тестовый и боевой контуры СДЭК различаются только адресом: учётные данные у
+// них разные, и перепутать их — самая частая ошибка при подключении.
+$cdekTest = filter_var(env('CDEK_TEST', false), FILTER_VALIDATE_BOOL);
+
 return [
 
     /*
@@ -28,10 +32,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    // СДЭК API v2. Тестовый контур: https://api.edu.cdek.ru/v2 с аккаунтом
-    // EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI и паролем PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG.
+    // СДЭК API v2. CDEK_TEST=true переключает на тестовый контур, у которого
+    // своя учётная запись; CDEK_BASE_URL нужен только для локальной заглушки.
     'cdek' => [
-        'base_url' => rtrim((string) env('CDEK_BASE_URL', 'https://api.cdek.ru/v2'), '/'),
+        'test' => $cdekTest,
+        'base_url' => rtrim((string) env(
+            'CDEK_BASE_URL',
+            $cdekTest ? 'https://api.edu.cdek.ru/v2' : 'https://api.cdek.ru/v2',
+        ), '/'),
         'account' => env('CDEK_ACCOUNT'),
         'password' => env('CDEK_PASSWORD'),
         'from_city_code' => env('CDEK_FROM_CITY_CODE') === null ? null : (int) env('CDEK_FROM_CITY_CODE'),
@@ -51,6 +59,15 @@ return [
         'shop_id' => env('YOOKASSA_SHOP_ID'),
         'secret_key' => env('YOOKASSA_SECRET_KEY'),
         'timeout' => (int) env('YOOKASSA_TIMEOUT', 15),
+        // Чек по 54-ФЗ. Магазину с подключённой фискализацией платёж без чека
+        // отклоняют, магазину без неё чек не нужен — отсюда выключатель.
+        'receipt' => filter_var(env('YOOKASSA_RECEIPT', true), FILTER_VALIDATE_BOOL),
+        // Ставка НДС: 1 — без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120.
+        'vat_code' => (int) env('YOOKASSA_VAT_CODE', 1),
+        // Система налогообложения. Нужна, только если их несколько.
+        'tax_system_code' => env('YOOKASSA_TAX_SYSTEM_CODE') === null
+            ? null
+            : (int) env('YOOKASSA_TAX_SYSTEM_CODE'),
     ],
 
     'slack' => [

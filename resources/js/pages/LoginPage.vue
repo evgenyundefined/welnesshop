@@ -4,22 +4,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { session } from '../stores/session'
 import { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
+import { useFormErrors } from '../formErrors'
 import PasswordInput from '../components/PasswordInput.vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const form = reactive({ email: '', password: '', remember: false })
-const errors = ref({})
-const message = ref('')
+const { errors, message, reset: resetErrors } = useFormErrors(form)
 const pending = ref(false)
 
 const inputClass =
     'w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500'
 
 async function submit() {
-    errors.value = {}
-    message.value = ''
+    resetErrors()
     pending.value = true
 
     try {

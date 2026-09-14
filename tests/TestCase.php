@@ -47,7 +47,7 @@ abstract class TestCase extends BaseTestCase
         return $this->app->make(RecordOrder::class)($customer, $quantities, [
             'contact_name' => 'Иван Петров',
             'contact_email' => 'ivan@example.com',
-            'contact_phone' => '+79990000000',
+            'contact_phone' => '+7 999 000 00 00',
             'shipping_address' => 'Москва, Тверская 1',
             'comment' => null,
             'payment_method' => PaymentMethod::Card,

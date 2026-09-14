@@ -13,6 +13,9 @@ services:
       APP_DEBUG: 'false'
       APP_KEY: '${APP_KEY:?set APP_KEY, see README}'
       APP_URL: '${APP_URL:?set APP_URL}'
+      # Сообщения валидации покупатель читает на русском.
+      APP_LOCALE: '${APP_LOCALE:-ru}'
+      APP_FALLBACK_LOCALE: 'en'
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: '3306'
@@ -47,7 +50,9 @@ services:
       # Интеграции. Пустое значение = интеграция выключена, стек поднимается
       # без неё. Переменные стека сами в контейнер не попадают: то, чего нет в
       # этом списке, приложение не увидит.
-      CDEK_BASE_URL: '${CDEK_BASE_URL:-https://api.cdek.ru/v2}'
+      # true — тестовый контур СДЭК (api.edu.cdek.ru) со своей учётной записью.
+      CDEK_TEST: '${CDEK_TEST:-false}'
+      CDEK_BASE_URL: '${CDEK_BASE_URL:-}'
       CDEK_ACCOUNT: '${CDEK_ACCOUNT:-}'
       CDEK_PASSWORD: '${CDEK_PASSWORD:-}'
       CDEK_FROM_CITY_CODE: '${CDEK_FROM_CITY_CODE:-}'
@@ -61,6 +66,11 @@ services:
       YOOKASSA_SHOP_ID: '${YOOKASSA_SHOP_ID:-}'
       YOOKASSA_SECRET_KEY: '${YOOKASSA_SECRET_KEY:-}'
       YOOKASSA_TIMEOUT: '${YOOKASSA_TIMEOUT:-15}'
+      # Чек по 54-ФЗ: магазину с фискализацией без него платёж не открыть.
+      YOOKASSA_RECEIPT: '${YOOKASSA_RECEIPT:-true}'
+      # 1 — без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120.
+      YOOKASSA_VAT_CODE: '${YOOKASSA_VAT_CODE:-1}'
+      YOOKASSA_TAX_SYSTEM_CODE: '${YOOKASSA_TAX_SYSTEM_CODE:-}'
     volumes:
       - app-storage:/var/www/html/storage/app/public
     depends_on:

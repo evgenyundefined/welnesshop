@@ -4,12 +4,14 @@ namespace App\Payments;
 
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Support\Str;
 
 /**
  * ЮKassa, redirect flow: the shop opens a payment, sends the buyer to the
@@ -57,9 +59,72 @@ final readonly class YooKassaGateway implements PaymentGateway
                     'return_url' => $this->url->to("/orders/{$order->number}/payment"),
                 ],
                 'metadata' => ['order_number' => $order->number],
+                ...$this->receipt($order),
             ]));
 
         return $this->intentFrom($payment, $order);
+    }
+
+    /**
+     * A shop with fiscalisation turned on cannot take a payment without one:
+     * ЮKassa answers "Receipt is missing or illegal". The lines are the order's
+     * own, and delivery is a line of its own, so the total on the receipt is
+     * the total being charged.
+     *
+     * @return array<string, mixed>
+     */
+    private function receipt(Order $order): array
+    {
+        if (! $this->config->boolean('services.yookassa.receipt')) {
+            return [];
+        }
+
+        $items = $order->items
+            ->map(fn (OrderItem $item): array => $this->receiptItem(
+                $item->product_name,
+                $item->unit_price_minor,
+                $item->quantity,
+                'commodity',
+                $order->currency,
+            ))
+            ->all();
+
+        if ($order->delivery_cost_minor > 0) {
+            $items[] = $this->receiptItem(
+                'Доставка — '.$order->delivery_method->label(),
+                $order->delivery_cost_minor,
+                1,
+                'service',
+                $order->currency,
+            );
+        }
+
+        return ['receipt' => array_filter([
+            'customer' => array_filter([
+                'email' => $order->contact_email,
+                // The register wants E.164 without separators.
+                'phone' => preg_replace('/\D/', '', $order->contact_phone),
+            ]),
+            'items' => $items,
+            'tax_system_code' => $this->config->get('services.yookassa.tax_system_code'),
+        ], static fn (mixed $value): bool => $value !== null)];
+    }
+
+    /** @return array<string, mixed> */
+    private function receiptItem(string $description, int $unitMinor, int $quantity, string $subject, string $currency): array
+    {
+        return [
+            'description' => Str::limit($description, 128, ''),
+            'quantity' => $quantity,
+            'amount' => [
+                'value' => number_format($unitMinor / 100, 2, '.', ''),
+                'currency' => $currency,
+            ],
+            'vat_code' => $this->config->integer('services.yookassa.vat_code'),
+            'payment_mode' => 'full_prepayment',
+            'payment_subject' => $subject,
+            'measure' => 'piece',
+        ];
     }
 
     /**

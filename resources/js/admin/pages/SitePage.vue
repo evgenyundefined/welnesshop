@@ -18,6 +18,7 @@ const form = reactive({
 })
 
 const bannerImageUrl = ref(null)
+const integrations = ref(null)
 const logoImageUrl = ref(null)
 const errors = ref({})
 const message = ref('')
@@ -37,6 +38,7 @@ function apply(data) {
 
 onMounted(async () => {
     const { data } = await api.get('/site')
+    integrations.value = data.integrations
     apply(data.data)
     loaded.value = true
 })
@@ -86,6 +88,22 @@ async function remove(endpoint) {
     apply(data.data)
 }
 
+function state(integration) {
+    if (!integration.enabled) {
+        return 'Выключена'
+    }
+
+    return integration.test ? 'Тестовый контур' : 'Боевой контур'
+}
+
+function badge(integration) {
+    if (!integration.enabled) {
+        return 'bg-ink-100 text-ink-500'
+    }
+
+    return integration.test ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+}
+
 const uploadBanner = (event) => upload(event, '/site/banner', 'Не удалось загрузить баннер')
 const removeBanner = () => remove('/site/banner')
 const uploadLogo = (event) => upload(event, '/site/logo', 'Не удалось загрузить логотип')
@@ -98,6 +116,33 @@ const removeLogo = () => remove('/site/logo')
             <h1 class="text-2xl font-bold tracking-tight">Сайт</h1>
             <p class="text-sm text-ink-400">Логотип, баннер над каталогом, блок над футером и колонки футера.</p>
         </div>
+
+        <section v-if="integrations" :class="card" class="space-y-3 p-6">
+            <h2 class="font-semibold">Интеграции</h2>
+
+            <div class="flex flex-wrap items-center gap-3 text-sm">
+                <span class="text-ink-500">Доставка СДЭК</span>
+                <span class="rounded-full px-2 py-1 text-xs font-medium" :class="badge(integrations.cdek)">
+                    {{ state(integrations.cdek) }}
+                </span>
+                <span class="font-mono text-xs text-ink-400">{{ integrations.cdek.endpoint }}</span>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 text-sm">
+                <span class="text-ink-500">Приём оплаты</span>
+                <span class="rounded-full px-2 py-1 text-xs font-medium" :class="badge(integrations.payments)">
+                    {{ state(integrations.payments) }}
+                </span>
+                <span v-if="integrations.payments.provider" class="font-mono text-xs text-ink-400">
+                    {{ integrations.payments.provider }}
+                </span>
+            </div>
+
+            <p class="text-xs text-ink-400">
+                Переключается переменными окружения: <code>CDEK_TEST</code> для доставки,
+                тестовым ключом <code>test_…</code> для оплаты. Задаются в панели хостинга.
+            </p>
+        </section>
 
         <section :class="card" class="space-y-4 p-6">
             <div class="flex flex-wrap items-center gap-3">

@@ -5,6 +5,7 @@ import { session } from '../stores/session'
 import { formatMoney } from '../money'
 import api, { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
+import { useFormErrors } from '../formErrors'
 import PhoneInput from '../components/PhoneInput.vue'
 import { deliveryMethods } from '../labels'
 
@@ -147,16 +148,14 @@ watch(() => form.delivery_method, () => {
     form.cdek_tariff_code = null
 })
 
-const errors = ref({})
-const message = ref('')
+const { errors, message, reset: resetErrors } = useFormErrors(form)
 const pending = ref(false)
 
 const inputClass =
     'w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500'
 
 async function submit() {
-    errors.value = {}
-    message.value = ''
+    resetErrors()
     pending.value = true
 
     try {

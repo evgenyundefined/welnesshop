@@ -89,6 +89,83 @@ class YooKassaPaymentTest extends TestCase
         });
     }
 
+    public function test_the_payment_carries_a_receipt_the_register_will_accept(): void
+    {
+        $order = $this->order();
+        Http::fake(['*/payments' => Http::response($this->payment('pending', $order->number))]);
+
+        $this->postJson(route('api.orders.pay', $order->number))->assertOk();
+
+        Http::assertSent(function (Request $request) use ($order): bool {
+            $receipt = $request->data()['receipt'];
+            $line = $order->items->sole();
+
+            $this->assertSame($order->contact_email, $receipt['customer']['email']);
+            $this->assertSame('79990000000', $receipt['customer']['phone']);
+            $this->assertSame($line->product_name, $receipt['items'][0]['description']);
+            $this->assertSame($line->quantity, $receipt['items'][0]['quantity']);
+            $this->assertSame('500.00', $receipt['items'][0]['amount']['value']);
+            $this->assertSame(1, $receipt['items'][0]['vat_code']);
+            $this->assertSame('commodity', $receipt['items'][0]['payment_subject']);
+            $this->assertSame('full_prepayment', $receipt['items'][0]['payment_mode']);
+
+            return true;
+        });
+    }
+
+    public function test_delivery_is_its_own_line_so_the_receipt_adds_up_to_the_charge(): void
+    {
+        $order = $this->order();
+        $order->forceFill(['delivery_cost_minor' => 390_50, 'total_minor' => 1_390_50])->save();
+
+        Http::fake(['*/payments' => Http::response($this->payment('pending', $order->number))]);
+
+        $this->postJson(route('api.orders.pay', $order->number))->assertOk();
+
+        Http::assertSent(function (Request $request): bool {
+            $body = $request->data();
+            $items = $body['receipt']['items'];
+
+            $this->assertCount(2, $items);
+            $this->assertSame('service', $items[1]['payment_subject']);
+            $this->assertSame('390.50', $items[1]['amount']['value']);
+
+            $sum = collect($items)->sum(
+                static fn (array $item): float => (float) $item['amount']['value'] * $item['quantity'],
+            );
+
+            $this->assertSame($body['amount']['value'], number_format($sum, 2, '.', ''));
+
+            return true;
+        });
+    }
+
+    public function test_a_shop_without_fiscalisation_sends_no_receipt(): void
+    {
+        config()->set('services.yookassa.receipt', false);
+
+        $order = $this->order();
+        Http::fake(['*/payments' => Http::response($this->payment('pending', $order->number))]);
+
+        $this->postJson(route('api.orders.pay', $order->number))->assertOk();
+
+        Http::assertSent(static fn (Request $request): bool => ! array_key_exists('receipt', $request->data()));
+    }
+
+    public function test_the_vat_rate_and_tax_system_come_from_configuration(): void
+    {
+        config()->set('services.yookassa.vat_code', 4);
+        config()->set('services.yookassa.tax_system_code', 2);
+
+        $order = $this->order();
+        Http::fake(['*/payments' => Http::response($this->payment('pending', $order->number))]);
+
+        $this->postJson(route('api.orders.pay', $order->number))->assertOk();
+
+        Http::assertSent(static fn (Request $request): bool => $request->data()['receipt']['items'][0]['vat_code'] === 4
+            && $request->data()['receipt']['tax_system_code'] === 2);
+    }
+
     public function test_two_attempts_to_pay_one_order_carry_the_same_idempotence_key(): void
     {
         $order = $this->order();
@@ -105,6 +182,22 @@ class YooKassaPaymentTest extends TestCase
         });
 
         $this->assertCount(1, array_unique($keys), 'a repeated attempt must not open a second payment');
+    }
+
+    public function test_a_settled_order_is_not_offered_for_payment_again(): void
+    {
+        $order = $this->order();
+        Http::fake(['*/payments/pay-1' => Http::response($this->payment('succeeded', $order->number))]);
+
+        $this->postJson(route('api.payments.yookassa.webhook'), ['object' => ['id' => 'pay-1']])->assertNoContent();
+
+        $this->getJson(route('api.orders.show', $order->number))
+            ->assertOk()
+            ->assertJsonPath('data.status', 'paid');
+
+        // The storefront hides the button on this status; the endpoint refuses
+        // it regardless, which is what keeps a stale page honest.
+        $this->postJson(route('api.orders.pay', $order->number))->assertStatus(409);
     }
 
     public function test_a_refusal_from_the_acquirer_reads_as_a_refusal(): void

@@ -10,6 +10,10 @@ const props = defineProps({ number: { type: String, required: true } })
 
 const order = ref(null)
 
+// A settled order is not paid again: the endpoint refuses it, and a button
+// that only produces an error has no business being on the page.
+const payable = computed(() => order.value?.status === 'awaiting_payment')
+
 const deliverySummary = computed(() => {
     const row = order.value
 
@@ -136,8 +140,12 @@ async function pay() {
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink-200 bg-white p-6">
-            <span class="text-lg font-bold">К оплате: {{ formatMoney(order.total_minor, order.currency) }}</span>
+            <span class="text-lg font-bold">
+                {{ payable ? 'К оплате' : 'Сумма заказа' }}: {{ formatMoney(order.total_minor, order.currency) }}
+            </span>
+
             <button
+                v-if="payable"
                 type="button"
                 class="rounded-lg bg-gold-400 px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-300 disabled:bg-ink-200 disabled:text-ink-400"
                 :disabled="pending"
@@ -145,6 +153,10 @@ async function pay() {
             >
                 Оплатить
             </button>
+
+            <span v-else class="text-sm" :class="order.status === 'paid' ? 'text-emerald-700' : 'text-ink-500'">
+                {{ order.status === 'paid' ? 'Заказ оплачен' : 'Заказ отменён, оплата недоступна' }}
+            </span>
         </div>
 
         <p v-if="payment" class="text-sm text-ink-500">{{ payment.message }}</p>
