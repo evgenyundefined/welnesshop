@@ -5,6 +5,13 @@
 @source '../js/**/*.vue';
 
 /*
+ * Not a width but an input device: a tablet is wide enough for the desktop
+ * layout and still cannot hover, so keying a hover reveal on the screen size
+ * would hide the text from it for good.
+ */
+@custom-variant desktop (@media (hover: hover) and (pointer: fine));
+
+/*
  * Two families carry the whole interface: ink for the chrome and the type,
  * gold for anything the eye is meant to land on. Nothing else is defined, so a
  * rebrand is a change to these values and nowhere else.
