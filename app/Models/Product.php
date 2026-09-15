@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductStatus;
+use App\Enums\StockLevel;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
@@ -81,6 +82,11 @@ class Product extends Model
     public function isAvailable(): bool
     {
         return $this->status->isVisibleInCatalog() && $this->stock > 0;
+    }
+
+    public function stockLevel(): StockLevel
+    {
+        return StockLevel::fromQuantity($this->stock);
     }
 
     /** @return array<string, string> */

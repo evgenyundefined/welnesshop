@@ -75,7 +75,8 @@ class ResourceShapeTest extends TestCase
                     'status' => 'published',
                     'price_minor' => 1_200_00,
                     'currency' => 'RUB',
-                    'stock' => 7,
+                    'stock_level' => 'few',
+                    'stock_label' => 'Мало',
                     'weight_grams' => null,
                     'is_available' => true,
                     'category' => [
@@ -150,7 +151,8 @@ class ResourceShapeTest extends TestCase
 
         $this->getJson(route('api.products.show', $product))
             ->assertOk()
-            ->assertJsonPath('data.stock', 0)
+            ->assertJsonPath('data.stock_level', 'out_of_stock')
+            ->assertJsonPath('data.stock_label', 'Нет в наличии')
             ->assertJsonPath('data.is_available', false);
     }
 

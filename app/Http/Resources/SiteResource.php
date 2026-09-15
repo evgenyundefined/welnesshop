@@ -18,7 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  *     pages: Collection<int, Page>,
  *     categories: Collection<int, Category>,
  *     products: Collection<int, Product>,
- *     online_payment: bool
+ *     online_payment: bool,
+ *     max_item_quantity: int
  * } $resource
  */
 class SiteResource extends JsonResource
@@ -30,6 +31,7 @@ class SiteResource extends JsonResource
 
         return [
             'online_payment' => $this->resource['online_payment'],
+            'max_item_quantity' => $this->resource['max_item_quantity'],
             'logo_url' => $settings->logo_image_url,
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [

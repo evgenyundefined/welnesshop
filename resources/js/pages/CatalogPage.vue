@@ -5,9 +5,12 @@ import api from '../api'
 import { site } from '../stores/site'
 import ProductCard from '../components/ProductCard.vue'
 import { useInternalLinkNavigation } from '../internalLinks'
+import { setDocumentTitle } from '../documentTitle'
 
 const route = useRoute()
 const followInternalLink = useInternalLinkNavigation()
+
+onMounted(() => setDocumentTitle(null))
 
 const categories = ref([])
 const products = ref([])

@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>agelesscode — админка</title>
+    {{-- The panel has nothing to offer a search engine. --}}
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ config('shop.brand') }} — админка</title>
     @vite(['resources/css/app.css', 'resources/js/admin.js'])
 </head>
 <body class="h-full bg-ink-100 text-ink-900 antialiased">

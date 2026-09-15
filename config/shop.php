@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'brand' => env('SHOP_BRAND', 'agelesscode'),
+
     'currency' => env('SHOP_CURRENCY', 'RUB'),
 
     'products_per_page' => (int) env('SHOP_PRODUCTS_PER_PAGE', 12),

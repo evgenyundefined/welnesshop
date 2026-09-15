@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { site } from '../stores/site'
 import { session } from '../stores/session'
 import { formatMoney } from '../money'
 import { messageFrom } from '../api'
@@ -66,7 +67,7 @@ function goToCheckout() {
                             <input
                                 type="number"
                                 min="1"
-                                :max="item.product.stock"
+                                :max="site.state.max_item_quantity"
                                 :value="item.quantity"
                                 class="w-20 rounded-lg border border-ink-300 px-2 py-1.5 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
                                 @change="changeQuantity(item, $event.target.value)"

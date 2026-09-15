@@ -8,6 +8,7 @@ use App\Actions\Site\ListPages;
 use App\Actions\Site\LoadSiteSettings;
 use App\Http\Resources\SiteResource;
 use App\Payments\PaymentGateway;
+use Illuminate\Config\Repository as Config;
 
 class SiteController extends Controller
 {
@@ -17,6 +18,7 @@ class SiteController extends Controller
         ListCategories $listCategories,
         ListFooterProducts $listFooterProducts,
         PaymentGateway $gateway,
+        Config $config,
     ): SiteResource {
         return new SiteResource([
             'settings' => $loadSiteSettings(),
@@ -24,6 +26,7 @@ class SiteController extends Controller
             'categories' => $listCategories(),
             'products' => $listFooterProducts(),
             'online_payment' => $gateway->isLive(),
+            'max_item_quantity' => $config->integer('shop.max_item_quantity'),
         ]);
     }
 }

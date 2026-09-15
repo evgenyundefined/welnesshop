@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { setDocumentTitle, setMetaDescription } from '../documentTitle'
 import api, { messageFrom } from '../api'
 import { session } from '../stores/session'
+import { site } from '../stores/site'
 import { formatMoney } from '../money'
 
 const props = defineProps({ slug: { type: String, required: true } })
@@ -15,6 +17,8 @@ const added = ref(false)
 onMounted(async () => {
     const { data } = await api.get(`/products/${props.slug}`)
     product.value = data.data
+    setDocumentTitle(product.value.name)
+    setMetaDescription(product.value.summary)
     shown.value = data.data.images?.[0] ?? null
 })
 
@@ -87,7 +91,9 @@ async function addToCart() {
                         </dd>
                     </template>
                     <dt class="text-ink-400">В наличии</dt>
-                    <dd>{{ product.stock }} шт.</dd>
+                    <dd :class="product.stock_level === 'last' ? 'font-semibold text-gold-700' : ''">
+                        {{ product.stock_label }}
+                    </dd>
                 </dl>
 
                 <div class="flex flex-wrap items-center justify-between gap-4 border-t border-ink-200 pt-4">
@@ -98,7 +104,7 @@ async function addToCart() {
                             v-model="quantity"
                             type="number"
                             min="1"
-                            :max="product.stock"
+                            :max="site.state.max_item_quantity"
                             class="w-20 rounded-lg border border-ink-300 px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
                         >
                         <button

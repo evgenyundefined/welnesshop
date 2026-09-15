@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
+import { setDocumentTitle } from '../documentTitle'
 import api from '../api'
 import { useInternalLinkNavigation } from '../internalLinks'
 
@@ -17,6 +18,7 @@ async function load() {
     try {
         const { data } = await api.get(`/pages/${props.slug}`)
         page.value = data.data
+        setDocumentTitle(page.value.title)
     } catch {
         missing.value = true
     }

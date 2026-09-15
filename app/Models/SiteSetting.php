@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
+    'seo_title',
+    'seo_description',
     'banner_enabled',
     'banner_title',
     'banner_subtitle',

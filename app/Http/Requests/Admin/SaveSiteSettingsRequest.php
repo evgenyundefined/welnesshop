@@ -10,6 +10,8 @@ class SaveSiteSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'seo_title' => ['nullable', 'string', 'max:255'],
+            'seo_description' => ['nullable', 'string', 'max:500'],
             'banner_enabled' => ['nullable', 'boolean'],
             'banner_title' => ['nullable', 'string', 'max:255'],
             'banner_subtitle' => ['nullable', 'string', 'max:500'],
@@ -29,6 +31,8 @@ class SaveSiteSettingsRequest extends FormRequest
         return [
             'banner_enabled' => $this->boolean('banner_enabled'),
             ...collect([
+                'seo_title',
+                'seo_description',
                 'banner_title',
                 'banner_subtitle',
                 'banner_button_label',

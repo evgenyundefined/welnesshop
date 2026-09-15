@@ -16,6 +16,8 @@ class ProductResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
+        $stockLevel = $this->resource->stockLevel();
+
         return [
             'id' => $this->resource->id,
             'slug' => $this->resource->slug,
@@ -27,7 +29,8 @@ class ProductResource extends JsonResource
             'status' => $this->resource->status->value,
             'price_minor' => $this->resource->price_minor,
             'currency' => $this->resource->currency,
-            'stock' => $this->resource->stock,
+            'stock_level' => $stockLevel->value,
+            'stock_label' => $stockLevel->label(),
             'weight_grams' => $this->resource->weight_grams,
             'is_available' => $this->resource->isAvailable(),
             'category' => new CategoryResource($this->whenLoaded('category')),

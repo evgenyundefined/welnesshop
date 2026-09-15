@@ -13,6 +13,8 @@ const form = reactive({
     promo_heading: '',
     promo_body: '',
     disclaimer: '',
+    seo_title: '',
+    seo_description: '',
     contacts_body: '',
     info_body: '',
 })
@@ -143,6 +145,32 @@ const removeLogo = () => remove('/site/logo')
                 тестовым ключом <code>test_…</code> для оплаты. Задаются в панели хостинга.
             </p>
         </section>
+
+        <form :class="card" class="space-y-4 p-6" novalidate @submit.prevent="submit">
+            <h2 class="font-semibold">Поисковая выдача</h2>
+
+            <div>
+                <label for="seo_title" class="mb-1.5 block text-sm text-ink-500">Заголовок главной</label>
+                <input id="seo_title" v-model="form.seo_title" type="text" :class="input" maxlength="255">
+                <p class="mt-1 text-xs text-ink-400">
+                    То, что видно в результатах поиска и во вкладке браузера. Пусто — берётся заголовок
+                    блока над футером.
+                </p>
+            </div>
+
+            <div>
+                <label for="seo_description" class="mb-1.5 block text-sm text-ink-500">Описание главной</label>
+                <textarea id="seo_description" v-model="form.seo_description" rows="3" :class="input" maxlength="500"></textarea>
+                <p class="mt-1 text-xs text-ink-400">
+                    Абзац под ссылкой в выдаче. Оптимально 150–200 символов. У товаров и страниц описание
+                    берётся из их собственного текста.
+                </p>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" :class="primaryButton" :disabled="saving">Сохранить</button>
+            </div>
+        </form>
 
         <section :class="card" class="space-y-4 p-6">
             <div class="flex flex-wrap items-center gap-3">
