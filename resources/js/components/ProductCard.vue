@@ -38,10 +38,6 @@ async function addToCart() {
                     class="size-full object-cover transition duration-500 group-hover:scale-105"
                 >
                 <span v-else class="block size-full bg-linear-to-br from-ink-700 via-ink-900 to-ink-950"></span>
-
-                <!-- The text now lies on the photo, so it carries its own
-                     darkness and stays readable over a light one. -->
-                <span class="absolute inset-0 bg-linear-to-t from-ink-950 via-ink-950/70 to-transparent"></span>
             </RouterLink>
 
             <RouterLink
@@ -57,26 +53,39 @@ async function addToCart() {
                 </svg>
             </RouterLink>
 
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-4">
-                <RouterLink
-                    :to="{ name: 'product', params: { slug: product.slug } }"
-                    class="pointer-events-auto font-semibold leading-snug text-white transition hover:text-gold-300"
-                >
-                    {{ product.name }}
-                </RouterLink>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 p-4">
+                <!-- Only the strip under the text is frosted, and it grows with
+                     it: the photo itself stays sharp instead of being darkened
+                     end to end, and the words still have something to sit on.
+                     The mask lets the blur fade out upwards so the panel has no
+                     edge drawn across the picture. -->
+                <span
+                    class="absolute inset-0 bg-ink-950/50 backdrop-blur-md mask-t-from-45% mask-t-to-95%"
+                ></span>
 
-                <!-- On a phone the description simply stays; where there is a
-                     mouse the card opens it on hover, so the grid keeps its
-                     photos and the text is one movement away. -->
-                <div
-                    class="grid transition-[grid-template-rows] duration-300 ease-out desktop:grid-rows-[0fr] desktop:group-hover:grid-rows-[1fr]"
-                >
-                    <div
-                        class="flex flex-col gap-1.5 overflow-hidden transition duration-300 ease-out desktop:translate-y-1 desktop:opacity-0 desktop:group-hover:translate-y-0 desktop:group-hover:opacity-100"
+                <div class="relative flex flex-col gap-1.5">
+                    <RouterLink
+                        :to="{ name: 'product', params: { slug: product.slug } }"
+                        class="pointer-events-auto font-semibold leading-snug text-white transition hover:text-gold-300"
                     >
-                        <p class="line-clamp-3 text-sm leading-snug text-ink-200">{{ product.summary }}</p>
+                        {{ product.name }}
+                    </RouterLink>
 
-                        <p v-if="product.supplier" class="text-xs text-ink-300">Поставщик: {{ product.supplier }}</p>
+                    <!-- On a phone the description simply stays; where there is
+                         a mouse the card opens it on hover, so the grid keeps
+                         its photos and the text is one movement away. -->
+                    <div
+                        class="grid transition-[grid-template-rows] duration-300 ease-out desktop:grid-rows-[0fr] desktop:group-hover:grid-rows-[1fr]"
+                    >
+                        <div
+                            class="flex flex-col gap-1.5 overflow-hidden transition duration-300 ease-out desktop:translate-y-1 desktop:opacity-0 desktop:group-hover:translate-y-0 desktop:group-hover:opacity-100"
+                        >
+                            <p class="line-clamp-3 text-sm leading-snug text-ink-200">{{ product.summary }}</p>
+
+                            <p v-if="product.supplier" class="text-xs text-ink-300">
+                                Поставщик: {{ product.supplier }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
