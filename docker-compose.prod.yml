@@ -94,6 +94,8 @@ services:
       MAIL_FROM_NAME: '${MAIL_FROM_NAME:-agelesscode}'
 
       # Необязательное дублирование заказов в чат.
+      # Если api.telegram.org с сервера недоступен — сюда адрес зеркала.
+      TELEGRAM_API_URL: '${TELEGRAM_API_URL:-https://api.telegram.org}'
       TELEGRAM_BOT_TOKEN: '${TELEGRAM_BOT_TOKEN:-}'
       TELEGRAM_CHAT_ID: '${TELEGRAM_CHAT_ID:-}'
       TELEGRAM_TIMEOUT: '${TELEGRAM_TIMEOUT:-10}'
@@ -197,6 +199,8 @@ services:
       MAIL_FROM_NAME: '${MAIL_FROM_NAME:-agelesscode}'
 
       # Необязательное дублирование заказов в чат.
+      # Если api.telegram.org с сервера недоступен — сюда адрес зеркала.
+      TELEGRAM_API_URL: '${TELEGRAM_API_URL:-https://api.telegram.org}'
       TELEGRAM_BOT_TOKEN: '${TELEGRAM_BOT_TOKEN:-}'
       TELEGRAM_CHAT_ID: '${TELEGRAM_CHAT_ID:-}'
       TELEGRAM_TIMEOUT: '${TELEGRAM_TIMEOUT:-10}'

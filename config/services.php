@@ -25,6 +25,9 @@ return [
     // Необязательное дублирование уведомлений о заказах в чат. Пусто — ничего
     // не отправляется, письма при этом уходят как обычно.
     'telegram' => [
+        // Адрес API вынесен: у части хостингов api.telegram.org недоступен, и
+        // тогда сюда ставят зеркало Bot API.
+        'api_url' => rtrim((string) env('TELEGRAM_API_URL', 'https://api.telegram.org'), '/'),
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_id' => env('TELEGRAM_CHAT_ID'),
         'timeout' => (int) env('TELEGRAM_TIMEOUT', 10),

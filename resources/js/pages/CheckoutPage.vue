@@ -168,6 +168,9 @@ watch(() => form.delivery_method, () => {
 const { errors, message, reset: resetErrors } = useFormErrors(form)
 const pending = ref(false)
 
+// Без онлайн-оплаты платить после оформления негде, и обещать оплату нельзя.
+const submitLabel = computed(() => (site.state.online_payment ? 'Перейти к оплате' : 'Оформить заказ'))
+
 const inputClass =
     'w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500'
 
@@ -322,7 +325,10 @@ async function submit() {
 
         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-ink-200 pt-4 sm:col-span-2">
             <div>
-                <span class="text-lg font-bold">К оплате: {{ formatMoney(payable, cart.currency) }}</span>
+                <span class="text-lg font-bold">
+                    {{ site.state.online_payment ? 'К оплате' : 'Сумма заказа' }}:
+                    {{ formatMoney(payable, cart.currency) }}
+                </span>
                 <p v-if="deliveryCost" class="text-xs text-ink-400">
                     Товары {{ formatMoney(cart.total_minor, cart.currency) }} + доставка
                     {{ formatMoney(deliveryCost, cart.currency) }}
@@ -333,7 +339,7 @@ async function submit() {
                 class="rounded-lg bg-gold-400 px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-300 disabled:bg-ink-200 disabled:text-ink-400"
                 :disabled="pending"
             >
-                Перейти к оплате
+                {{ pending ? 'Оформляем…' : submitLabel }}
             </button>
         </div>
     </form>

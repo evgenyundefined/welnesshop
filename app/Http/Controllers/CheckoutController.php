@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Actions\Cart\ResolveCart;
 use App\Actions\Delivery\PriceDelivery;
-use App\Actions\Orders\AnnounceOrder;
 use App\Actions\Orders\PlaceOrder;
 use App\Delivery\Cdek\CdekUnavailable;
 use App\Exceptions\CartIsEmpty;
 use App\Exceptions\ProductNotAvailable;
 use App\Http\Requests\CheckoutRequest;
 use App\Http\Resources\OrderResource;
+use App\Jobs\AnnounceOrder;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +28,6 @@ class CheckoutController extends Controller
         ResolveCart $resolveCart,
         PriceDelivery $priceDelivery,
         PlaceOrder $placeOrder,
-        AnnounceOrder $announceOrder,
     ): JsonResponse {
         /** @var Customer $customer */
         $customer = $request->user();
@@ -41,9 +40,9 @@ class CheckoutController extends Controller
 
         $order = $placeOrder($customer, $cart, [...$details, ...$delivery]);
 
-        // After the order exists, never inside its transaction: a mail server
-        // that is down must not roll back stock that is already committed.
-        $announceOrder($order);
+        // Queued, and after the order exists: the buyer waits for none of it,
+        // and a mail server that is down cannot roll back committed stock.
+        AnnounceOrder::dispatch($order);
 
         return (new OrderResource($order))
             ->response()

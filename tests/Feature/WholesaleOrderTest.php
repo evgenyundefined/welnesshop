@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Orders\AnnounceOrder;
+use App\Jobs\AnnounceOrder;
 use App\Mail\NewOrderMail;
 use App\Mail\OrderPlacedMail;
 use App\Models\Category;
@@ -188,7 +188,7 @@ class WholesaleOrderTest extends TestCase
             'api.telegram.org/*' => Http::response(['ok' => false], 500),
         ]);
 
-        $this->app->make(AnnounceOrder::class)($order);
+        $this->app->call([new AnnounceOrder($order), 'handle']);
 
         $this->assertDatabaseHas('orders', ['id' => $order->id]);
     }
