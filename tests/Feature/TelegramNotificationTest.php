@@ -62,6 +62,30 @@ class TelegramNotificationTest extends TestCase
         $this->assertSame('не задан TELEGRAM_CHAT_ID', $this->telegram()->deliver('привет'));
     }
 
+    public function test_the_request_goes_through_the_proxy_when_one_is_set(): void
+    {
+        // Proved against a port nothing listens on: the refusal has to name the
+        // proxy, which it only can if the option actually reached curl.
+        config()->set('services.telegram.proxy', 'http://127.0.0.1:9');
+        config()->set('services.telegram.timeout', 3);
+
+        $reason = $this->telegram()->deliver('привет');
+
+        $this->assertStringContainsString('недоступен', $reason);
+        $this->assertMatchesRegularExpression('/proxy|127\.0\.0\.1 port 9/i', $reason);
+    }
+
+    public function test_the_command_explains_a_blocked_host(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('cURL error 28: Connection timed out'));
+
+        $this->artisan('telegram:test')
+            ->expectsOutputToContain('До Telegram нет сети с этого сервера')
+            ->expectsOutputToContain('TELEGRAM_PROXY')
+            ->expectsOutputToContain('TELEGRAM_API_URL')
+            ->assertFailed();
+    }
+
     public function test_a_mirror_is_used_when_the_api_is_moved(): void
     {
         config()->set('services.telegram.api_url', 'https://tg.example.com');

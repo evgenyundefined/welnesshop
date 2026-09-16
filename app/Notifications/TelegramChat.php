@@ -114,9 +114,12 @@ class TelegramChat
      */
     private function call(string $method, array $payload): array
     {
+        $proxy = trim((string) $this->config->get('services.telegram.proxy'));
+
         try {
             $response = $this->http
                 ->timeout($this->config->integer('services.telegram.timeout'))
+                ->when($proxy !== '', fn ($request) => $request->withOptions(['proxy' => $proxy]))
                 ->post("{$this->apiUrl()}/bot{$this->token()}/{$method}", $payload);
         } catch (Throwable $e) {
             return ['error' => 'Telegram недоступен: '.$e->getMessage()];

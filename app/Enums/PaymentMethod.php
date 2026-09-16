@@ -2,12 +2,17 @@
 
 namespace App\Enums;
 
+/**
+ * Declaration order is the order the checkout offers them in, and the first
+ * one the form lands on. It is not alphabetical and not historical: it is what
+ * the shop would rather the buyer picked.
+ */
 enum PaymentMethod: string
 {
     case Card = 'card';
     case Sbp = 'sbp';
-    case Invoice = 'invoice';
     case OnAgreement = 'on_agreement';
+    case Invoice = 'invoice';
 
     public function label(): string
     {

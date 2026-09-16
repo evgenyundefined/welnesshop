@@ -87,7 +87,21 @@ class IntegrationSwitchTest extends TestCase
             ->pluck('value')
             ->all();
 
-        $this->assertSame(['invoice', 'on_agreement'], $offered);
+        // First in the list is what the checkout form selects by itself, so
+        // the order is part of the behaviour, not a detail of the enum.
+        $this->assertSame(['on_agreement', 'invoice'], $offered);
+    }
+
+    public function test_the_buyer_lands_on_agreeing_with_a_manager(): void
+    {
+        $this->configureBoth();
+
+        $first = $this->getJson('/api/site')->assertOk()->json('data.payment_methods.0');
+
+        $this->assertSame(
+            ['value' => 'on_agreement', 'label' => 'По согласованию с менеджером'],
+            $first,
+        );
     }
 
     public function test_cdek_is_not_offered_as_a_delivery_method(): void

@@ -32,6 +32,17 @@ class TestTelegram extends Command
         if ($reason !== '') {
             $this->error("Сообщение в чат {$chatId} не доставлено: {$reason}");
 
+            // A timeout is not a misconfiguration and no amount of retyping the
+            // chat id will fix it; say so instead of sending them looking.
+            if (str_contains($reason, 'недоступен')) {
+                $this->line('До Telegram нет сети с этого сервера — ни один chat_id этого не исправит.');
+                $this->line('  Вариант 1: прокси в TELEGRAM_PROXY, например socks5://user:pass@host:1080');
+                $this->line('  Вариант 2: зеркало Bot API в TELEGRAM_API_URL');
+                $this->line('Письма о заказах это не затрагивает — они идут своим путём.');
+
+                return self::FAILURE;
+            }
+
             return $this->suggestChats($telegram);
         }
 

@@ -10,6 +10,9 @@ use Tests\TestCase;
 
 class StockLevelTest extends TestCase
 {
+    /** Distinctive on purpose: nothing else in the payload can spell it. */
+    private const SECRET_STOCK = 4242;
+
     #[DataProvider('quantities')]
     public function test_a_quantity_becomes_a_level(int $stock, StockLevel $expected): void
     {
@@ -56,25 +59,33 @@ class StockLevelTest extends TestCase
 
     public function test_the_catalog_never_hands_out_the_exact_count(): void
     {
-        $product = $this->makeProduct(['stock' => 37, 'status' => ProductStatus::Published]);
+        // Every other number is pinned, so the count is the only place this
+        // one could come from. Left to the factory, a random price of 37465710
+        // contains it and fails the search on its own — as it once did.
+        $product = $this->makeProduct([
+            'stock' => self::SECRET_STOCK,
+            'status' => ProductStatus::Published,
+            'price_minor' => 1_000_00,
+            'weight_grams' => 500,
+        ]);
 
-        // 37 must not reach the browser by any name — not as stock, not inside
-        // the cart, not through the listing that feeds the catalog grid.
+        // The count must not reach the browser by any name — not as stock, not
+        // inside the cart, not through the listing that feeds the catalog grid.
         $this->getJson("/api/products/{$product->slug}")
             ->assertOk()
             ->assertJsonMissingPath('data.stock')
             ->assertJsonPath('data.stock_level', StockLevel::Many->value)
-            ->assertDontSee('37', false);
+            ->assertDontSee((string) self::SECRET_STOCK, false);
 
         $this->getJson('/api/products')
             ->assertOk()
             ->assertJsonMissingPath('data.0.stock')
-            ->assertDontSee('37', false);
+            ->assertDontSee((string) self::SECRET_STOCK, false);
 
         $this->postJson('/api/cart/items', ['product_id' => $product->id, 'quantity' => 1])
             ->assertOk()
             ->assertJsonMissingPath('data.items.0.product.stock')
-            ->assertDontSee('37', false);
+            ->assertDontSee((string) self::SECRET_STOCK, false);
     }
 
     public function test_the_admin_still_sees_the_exact_count(): void

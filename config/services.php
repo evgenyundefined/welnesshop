@@ -28,9 +28,12 @@ return [
         // Адрес API вынесен: у части хостингов api.telegram.org недоступен, и
         // тогда сюда ставят зеркало Bot API.
         'api_url' => rtrim((string) env('TELEGRAM_API_URL', 'https://api.telegram.org'), '/'),
+        // Прокси для исходящего запроса: у части хостингов до Telegram нет
+        // сети вовсе. Пусто — идём напрямую.
+        'proxy' => env('TELEGRAM_PROXY'),
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_id' => env('TELEGRAM_CHAT_ID'),
-        'timeout' => (int) env('TELEGRAM_TIMEOUT', 10),
+        'timeout' => (int) env('TELEGRAM_TIMEOUT', 8),
     ],
 
     'resend' => [

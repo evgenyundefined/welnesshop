@@ -8,6 +8,7 @@ use Illuminate\Config\Repository as Config;
 /**
  * One list, used both to build the checkout form and to validate what comes
  * back from it, so the form can never offer what the server would refuse.
+ * Order is carried over from the enum: the form selects the first entry.
  */
 class AvailablePaymentMethods
 {

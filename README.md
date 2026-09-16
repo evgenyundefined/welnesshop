@@ -615,9 +615,45 @@ docker compose exec app php artisan telegram:test
 показывает список чатов, о которых бот знает, с их id), Telegram недоступен с
 сервера, или чат не найден. При успехе в чат приходит тестовое сообщение.
 
-Если `api.telegram.org` с сервера недоступен — частая история у российских
-хостингов — адрес API меняется на зеркало Bot API переменной
-`TELEGRAM_API_URL`.
+Если `telegram:test` отвечает «Telegram недоступен: cURL error 28» — до
+Telegram с сервера нет сети. Частая история у российских хостингов, кодом не
+обходится. Два пути:
+
+| Переменная | Что указывать |
+| --- | --- |
+| `TELEGRAM_PROXY` | `socks5://user:pass@host:1080` или `http://host:3128` — запрос пойдёт через прокси, токен остаётся у вас |
+| `TELEGRAM_API_URL` | адрес зеркала Bot API вместо `https://api.telegram.org` |
+
+Прокси предпочтительнее: чужое зеркало Bot API видит и токен бота, и все
+сообщения. На письма о заказах это всё не влияет — они идут своим путём.
+
+**MTProto-прокси (server / port / secret) сюда не подходит.** Это протокол
+самого приложения Telegram; обычный HTTPS-запрос на Bot API через него не
+идёт, вписать secret некуда.
+
+Если ни прокси, ни зеркала нет, своё зеркало поднимается бесплатно на
+Cloudflare Workers — тогда токен проходит только через вашу же страницу:
+
+```js
+export default {
+    async fetch(request, env) {
+        const url = new URL(request.url)
+
+        // Пускаем только свой токен, иначе воркер станет открытым прокси.
+        if (! url.pathname.startsWith(`/bot${env.BOT_TOKEN}/`)) {
+            return new Response('not found', { status: 404 })
+        }
+
+        url.protocol = 'https:'
+        url.hostname = 'api.telegram.org'
+        url.port = ''
+
+        return fetch(new Request(url, request))
+    },
+}
+```
+
+Адрес воркера (`https://…workers.dev`) прописывается в `TELEGRAM_API_URL`.
 
 ## Остатки
 
