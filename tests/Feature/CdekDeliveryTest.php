@@ -18,13 +18,14 @@ class CdekDeliveryTest extends TestCase
         'contact_name' => 'Иван Петров',
         'contact_email' => 'ivan@example.com',
         'contact_phone' => '+79990000000',
-        'payment_method' => 'card',
+        'payment_method' => 'on_agreement',
     ];
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        config()->set('shop.integrations.cdek', true);
         config()->set('services.cdek.account', 'account');
         config()->set('services.cdek.password', 'secret');
         config()->set('services.cdek.from_city_code', 44);

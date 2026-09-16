@@ -26,12 +26,17 @@ class DescribeIntegrations
     {
         return [
             'cdek' => [
-                'enabled' => $this->cdek->isConfigured(),
+                // Two separate answers: a switched-off integration still has
+                // its keys, and the owner should be able to tell the two
+                // apart before going looking for a missing password.
+                'enabled' => $this->cdek->isEnabled(),
+                'configured' => $this->cdek->isConfigured(),
                 'test' => $this->config->boolean('services.cdek.test'),
                 'endpoint' => $this->config->string('services.cdek.base_url'),
             ],
             'payments' => [
                 'enabled' => $this->gateway->isLive(),
+                'configured' => YooKassaGateway::isConfigured($this->config),
                 // ЮKassa marks a test shop's key with the prefix itself.
                 'test' => str_starts_with((string) $this->config->get('services.yookassa.secret_key'), 'test_'),
                 'provider' => $this->gateway->isLive() ? YooKassaGateway::PROVIDER : null,

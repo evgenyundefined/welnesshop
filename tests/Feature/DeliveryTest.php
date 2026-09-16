@@ -14,7 +14,7 @@ class DeliveryTest extends TestCase
         'contact_email' => 'ivan@example.com',
         'contact_phone' => '+79990000000',
         'shipping_address' => 'Москва, Тверская 1',
-        'payment_method' => 'card',
+        'payment_method' => 'on_agreement',
     ];
 
     public function test_checkout_records_a_courier_delivery_without_a_cost(): void

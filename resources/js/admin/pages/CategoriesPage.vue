@@ -12,7 +12,7 @@ const page = ref(1)
 const error = ref('')
 
 const editing = ref(null)
-const form = reactive({ name: '', slug: '', description: '', position: 0 })
+const form = reactive({ name: '', slug: '', description: '', position: 0, wholesale_only: false, min_order_quantity: 1 })
 const formErrors = ref({})
 const formMessage = ref('')
 const saving = ref(false)
@@ -39,7 +39,7 @@ onMounted(load)
 
 function openCreate() {
     editing.value = 'new'
-    Object.assign(form, { name: '', slug: '', description: '', position: 0 })
+    Object.assign(form, { name: '', slug: '', description: '', position: 0, wholesale_only: false, min_order_quantity: 1 })
     formErrors.value = {}
     formMessage.value = ''
 }
@@ -51,6 +51,8 @@ function openEdit(category) {
         slug: category.slug,
         description: category.description ?? '',
         position: category.position,
+        wholesale_only: category.wholesale_only,
+        min_order_quantity: category.min_order_quantity,
     })
     formErrors.value = {}
     formMessage.value = ''
@@ -61,7 +63,12 @@ async function save() {
     formMessage.value = ''
     saving.value = true
 
-    const payload = { ...form, description: form.description || null, position: Number(form.position) }
+    const payload = {
+        ...form,
+        description: form.description || null,
+        position: Number(form.position),
+        min_order_quantity: Number(form.min_order_quantity),
+    }
 
     try {
         if (editing.value === 'new') {
@@ -135,6 +142,7 @@ async function remove(category) {
                     <tr class="border-b border-ink-200">
                         <th :class="th">Название</th>
                         <th :class="th">Slug</th>
+                        <th :class="th">Опт</th>
                         <th :class="th">Позиция</th>
                         <th :class="th">Товаров</th>
                         <th></th>
@@ -148,6 +156,15 @@ async function remove(category) {
                     >
                         <td :class="td">{{ category.name }}</td>
                         <td :class="td" class="font-mono text-xs text-ink-500">{{ category.slug }}</td>
+                        <td :class="td" class="text-xs text-ink-500">
+                            <span v-if="category.wholesale_only" class="rounded-full bg-gold-100 px-2 py-1 text-gold-800">
+                                опт
+                            </span>
+                            <span v-if="category.min_order_quantity > 1" class="ml-1 whitespace-nowrap">
+                                от {{ category.min_order_quantity }} шт.
+                            </span>
+                            <span v-if="!category.wholesale_only && category.min_order_quantity <= 1">—</span>
+                        </td>
                         <td :class="td">
                             <div class="flex items-center gap-1">
                                 <span class="w-6 tabular-nums">{{ category.position }}</span>
@@ -219,6 +236,33 @@ async function remove(category) {
                     <input id="position" v-model="form.position" type="number" min="0" :class="input">
                     <p class="mt-1 text-xs text-ink-400">Меньше — выше в списке категорий на витрине.</p>
                     <p v-if="formErrors.position" class="mt-1 text-sm text-red-700">{{ formErrors.position }}</p>
+                </div>
+
+                <div class="rounded-lg border border-ink-200 bg-ink-50 p-4">
+                    <label class="flex items-center gap-2 text-sm">
+                        <input v-model="form.wholesale_only" type="checkbox" class="size-4 accent-gold-500">
+                        Только для оптовых закупок
+                    </label>
+                    <p class="mt-1 text-xs text-ink-400">
+                        Подпись появится у цены — и в каталоге, и на странице товара.
+                    </p>
+
+                    <label for="min_order_quantity" class="mt-4 mb-1.5 block text-sm text-ink-500">
+                        Минимум в заказе, шт.
+                    </label>
+                    <input
+                        id="min_order_quantity"
+                        v-model="form.min_order_quantity"
+                        type="number"
+                        min="1"
+                        :class="input"
+                    >
+                    <p class="mt-1 text-xs text-ink-400">
+                        Меньше этого количества товар нельзя положить в корзину и заказать. 1 — без ограничения.
+                    </p>
+                    <p v-if="formErrors.min_order_quantity" class="mt-1 text-sm text-red-700">
+                        {{ formErrors.min_order_quantity }}
+                    </p>
                 </div>
 
                 <p v-if="formMessage" class="text-sm text-red-700">{{ formMessage }}</p>

@@ -22,4 +22,9 @@ class CategoryFactory extends Factory
             'position' => fake()->numberBetween(0, 100),
         ];
     }
+
+    public function wholesale(int $minimum = 10): static
+    {
+        return $this->state(['wholesale_only' => true, 'min_order_quantity' => $minimum]);
+    }
 }

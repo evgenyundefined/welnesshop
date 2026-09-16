@@ -72,8 +72,134 @@ services:
       # 1 — без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120.
       YOOKASSA_VAT_CODE: '${YOOKASSA_VAT_CODE:-1}'
       YOOKASSA_TAX_SYSTEM_CODE: '${YOOKASSA_TAX_SYSTEM_CODE:-}'
+
+      # Выключатели интеграций, отдельные от их ключей: false — подключено,
+      # но покупателю не предлагается. Вернуть приём оплаты или СДЭК — это
+      # true здесь и перезапуск стека, ничего больше.
+      SHOP_ONLINE_PAYMENT_ENABLED: '${SHOP_ONLINE_PAYMENT_ENABLED:-false}'
+      SHOP_CDEK_ENABLED: '${SHOP_CDEK_ENABLED:-false}'
+
+      # Куда уходит уведомление о новом заказе.
+      SHOP_ORDERS_EMAIL: '${SHOP_ORDERS_EMAIL:-support@agelesscode.store}'
+
+      # Почта. Без MAIL_HOST письма пишутся в лог и никуда не уходят.
+      MAIL_MAILER: '${MAIL_MAILER:-smtp}'
+      MAIL_HOST: '${MAIL_HOST:-smtp.beget.com}'
+      # 465 со smtps; если провайдер режет порт, 2525 со scheme smtp.
+      MAIL_PORT: '${MAIL_PORT:-465}'
+      MAIL_SCHEME: '${MAIL_SCHEME:-smtps}'
+      MAIL_USERNAME: '${MAIL_USERNAME:-support@agelesscode.store}'
+      MAIL_PASSWORD: '${MAIL_PASSWORD:?set MAIL_PASSWORD, пароль почтового ящика}'
+      MAIL_FROM_ADDRESS: '${MAIL_FROM_ADDRESS:-support@agelesscode.store}'
+      MAIL_FROM_NAME: '${MAIL_FROM_NAME:-agelesscode}'
+
+      # Необязательное дублирование заказов в чат.
+      TELEGRAM_BOT_TOKEN: '${TELEGRAM_BOT_TOKEN:-}'
+      TELEGRAM_CHAT_ID: '${TELEGRAM_CHAT_ID:-}'
+      TELEGRAM_TIMEOUT: '${TELEGRAM_TIMEOUT:-10}'
     volumes:
       - app-storage:/var/www/html/storage/app/public
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Письма поставлены в очередь, чтобы не задерживать ответ покупателю. Без
+  # этого воркера они просто копились бы в redis и не ушли бы никогда.
+  queue:
+    image: '${APP_IMAGE:-wellness-shop-app:latest}'
+    restart: unless-stopped
+    command: ['php', 'artisan', 'queue:work', '--tries=3', '--max-time=3600', '--sleep=3']
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: '${APP_KEY:?set APP_KEY, see README}'
+      APP_URL: '${APP_URL:?set APP_URL}'
+      # Сообщения валидации покупатель читает на русском.
+      APP_LOCALE: '${APP_LOCALE:-ru}'
+      APP_FALLBACK_LOCALE: 'en'
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_DATABASE: '${DB_DATABASE:-wellness}'
+      DB_USERNAME: '${DB_USERNAME:-wellness}'
+      DB_PASSWORD: '${DB_PASSWORD:?set DB_PASSWORD}'
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      SESSION_DRIVER: redis
+      # Держите true за HTTPS; временно false, пока домен ещё на голом http.
+      SESSION_SECURE_COOKIE: '${SESSION_SECURE_COOKIE:-true}'
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      FILESYSTEM_DISK: public
+      SHOP_ADMIN_EMAIL: '${SHOP_ADMIN_EMAIL:?set SHOP_ADMIN_EMAIL}'
+      SHOP_ADMIN_PASSWORD: '${SHOP_ADMIN_PASSWORD:?set SHOP_ADMIN_PASSWORD}'
+      SHOP_ADMIN_NAME: '${SHOP_ADMIN_NAME:-Администратор}'
+      SEED_CATALOG: '${SEED_CATALOG:-false}'
+      SHOP_BRAND: '${SHOP_BRAND:-agelesscode}'
+      SHOP_PASSWORD_MIN_LENGTH: '${SHOP_PASSWORD_MIN_LENGTH:-5}'
+      SHOP_CURRENCY: '${SHOP_CURRENCY:-RUB}'
+      SHOP_PRODUCTS_PER_PAGE: '${SHOP_PRODUCTS_PER_PAGE:-12}'
+      SHOP_MAX_PRODUCTS_PER_PAGE: '${SHOP_MAX_PRODUCTS_PER_PAGE:-60}'
+      SHOP_ORDERS_PER_PAGE: '${SHOP_ORDERS_PER_PAGE:-10}'
+      SHOP_MAX_ORDERS_PER_PAGE: '${SHOP_MAX_ORDERS_PER_PAGE:-50}'
+      SHOP_MAX_ITEM_QUANTITY: '${SHOP_MAX_ITEM_QUANTITY:-99}'
+      SHOP_ADMIN_PER_PAGE: '${SHOP_ADMIN_PER_PAGE:-20}'
+      SHOP_MAX_ADMIN_PER_PAGE: '${SHOP_MAX_ADMIN_PER_PAGE:-100}'
+      SHOP_MAX_PRODUCT_IMAGES: '${SHOP_MAX_PRODUCT_IMAGES:-10}'
+      SHOP_MAX_IMAGE_KILOBYTES: '${SHOP_MAX_IMAGE_KILOBYTES:-5120}'
+      SHOP_FOOTER_PRODUCTS: '${SHOP_FOOTER_PRODUCTS:-10}'
+      SHOP_ORDER_NUMBER_PREFIX: '${SHOP_ORDER_NUMBER_PREFIX:-WLN}'
+      # Интеграции. Пустое значение = интеграция выключена, стек поднимается
+      # без неё. Переменные стека сами в контейнер не попадают: то, чего нет в
+      # этом списке, приложение не увидит.
+      # true — тестовый контур СДЭК (api.edu.cdek.ru) со своей учётной записью.
+      CDEK_TEST: '${CDEK_TEST:-false}'
+      CDEK_BASE_URL: '${CDEK_BASE_URL:-}'
+      CDEK_ACCOUNT: '${CDEK_ACCOUNT:-}'
+      CDEK_PASSWORD: '${CDEK_PASSWORD:-}'
+      CDEK_FROM_CITY_CODE: '${CDEK_FROM_CITY_CODE:-}'
+      CDEK_SHIPMENT_POINT: '${CDEK_SHIPMENT_POINT:-}'
+      CDEK_TIMEOUT: '${CDEK_TIMEOUT:-10}'
+      CDEK_PACKAGE_LENGTH: '${CDEK_PACKAGE_LENGTH:-20}'
+      CDEK_PACKAGE_WIDTH: '${CDEK_PACKAGE_WIDTH:-15}'
+      CDEK_PACKAGE_HEIGHT: '${CDEK_PACKAGE_HEIGHT:-10}'
+      SHOP_DEFAULT_PRODUCT_WEIGHT_GRAMS: '${SHOP_DEFAULT_PRODUCT_WEIGHT_GRAMS:-300}'
+      YOOKASSA_BASE_URL: '${YOOKASSA_BASE_URL:-https://api.yookassa.ru/v3}'
+      YOOKASSA_SHOP_ID: '${YOOKASSA_SHOP_ID:-}'
+      YOOKASSA_SECRET_KEY: '${YOOKASSA_SECRET_KEY:-}'
+      YOOKASSA_TIMEOUT: '${YOOKASSA_TIMEOUT:-15}'
+      # Чек по 54-ФЗ: магазину с фискализацией без него платёж не открыть.
+      YOOKASSA_RECEIPT: '${YOOKASSA_RECEIPT:-true}'
+      # 1 — без НДС, 2 — 0%, 3 — 10%, 4 — 20%, 5 — 10/110, 6 — 20/120.
+      YOOKASSA_VAT_CODE: '${YOOKASSA_VAT_CODE:-1}'
+      YOOKASSA_TAX_SYSTEM_CODE: '${YOOKASSA_TAX_SYSTEM_CODE:-}'
+
+      # Выключатели интеграций, отдельные от их ключей: false — подключено,
+      # но покупателю не предлагается. Вернуть приём оплаты или СДЭК — это
+      # true здесь и перезапуск стека, ничего больше.
+      SHOP_ONLINE_PAYMENT_ENABLED: '${SHOP_ONLINE_PAYMENT_ENABLED:-false}'
+      SHOP_CDEK_ENABLED: '${SHOP_CDEK_ENABLED:-false}'
+
+      # Куда уходит уведомление о новом заказе.
+      SHOP_ORDERS_EMAIL: '${SHOP_ORDERS_EMAIL:-support@agelesscode.store}'
+
+      # Почта. Без MAIL_HOST письма пишутся в лог и никуда не уходят.
+      MAIL_MAILER: '${MAIL_MAILER:-smtp}'
+      MAIL_HOST: '${MAIL_HOST:-smtp.beget.com}'
+      # 465 со smtps; если провайдер режет порт, 2525 со scheme smtp.
+      MAIL_PORT: '${MAIL_PORT:-465}'
+      MAIL_SCHEME: '${MAIL_SCHEME:-smtps}'
+      MAIL_USERNAME: '${MAIL_USERNAME:-support@agelesscode.store}'
+      MAIL_PASSWORD: '${MAIL_PASSWORD:?set MAIL_PASSWORD, пароль почтового ящика}'
+      MAIL_FROM_ADDRESS: '${MAIL_FROM_ADDRESS:-support@agelesscode.store}'
+      MAIL_FROM_NAME: '${MAIL_FROM_NAME:-agelesscode}'
+
+      # Необязательное дублирование заказов в чат.
+      TELEGRAM_BOT_TOKEN: '${TELEGRAM_BOT_TOKEN:-}'
+      TELEGRAM_CHAT_ID: '${TELEGRAM_CHAT_ID:-}'
+      TELEGRAM_TIMEOUT: '${TELEGRAM_TIMEOUT:-10}'
     depends_on:
       mysql:
         condition: service_healthy

@@ -89,6 +89,17 @@ class Product extends Model
         return StockLevel::fromQuantity($this->stock);
     }
 
+    /** Wholesale terms belong to the category; the product answers for itself. */
+    public function isWholesaleOnly(): bool
+    {
+        return $this->category->wholesale_only;
+    }
+
+    public function minOrderQuantity(): int
+    {
+        return max(1, $this->category->min_order_quantity);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

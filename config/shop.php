@@ -34,6 +34,18 @@ return [
     // Password::defaults() — и при регистрации, и при смене из админки.
     'password_min_length' => (int) env('SHOP_PASSWORD_MIN_LENGTH', 5),
 
+    // Выключатели интеграций, отдельные от их настроек: оплату и СДЭК просят
+    // отключить на время, не теряя ключи и не разбирая подключение. Значение
+    // false здесь — это «подключено, но недоступно покупателю».
+    'integrations' => [
+        'online_payment' => filter_var(env('SHOP_ONLINE_PAYMENT_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'cdek' => filter_var(env('SHOP_CDEK_ENABLED', false), FILTER_VALIDATE_BOOL),
+    ],
+
+    // Куда уходит уведомление о новом заказе. Пусто — письмо магазину не
+    // отправляется, письмо покупателю уходит в любом случае.
+    'orders_email' => env('SHOP_ORDERS_EMAIL'),
+
     'cart_session_key' => 'cart_token',
 
     'order_number_prefix' => env('SHOP_ORDER_NUMBER_PREFIX', 'WLN'),

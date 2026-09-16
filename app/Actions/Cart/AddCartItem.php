@@ -2,6 +2,7 @@
 
 namespace App\Actions\Cart;
 
+use App\Exceptions\BelowMinimumQuantity;
 use App\Exceptions\ProductNotAvailable;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -13,6 +14,7 @@ class AddCartItem
     public function __construct(private readonly Config $config) {}
 
     /**
+     * @throws BelowMinimumQuantity
      * @throws ProductNotAvailable
      */
     public function __invoke(Cart $cart, Product $product, int $quantity): CartItem
@@ -30,6 +32,7 @@ class AddCartItem
     }
 
     /**
+     * @throws BelowMinimumQuantity
      * @throws ProductNotAvailable
      */
     private function assertAvailable(Product $product, int $requested): void
@@ -39,6 +42,10 @@ class AddCartItem
 
         if (! $product->status->isVisibleInCatalog() || ! $withinStock || ! $withinLimit) {
             throw ProductNotAvailable::forProduct($product);
+        }
+
+        if ($requested < $product->minOrderQuantity()) {
+            throw BelowMinimumQuantity::forProduct($product);
         }
     }
 }

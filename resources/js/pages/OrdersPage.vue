@@ -3,9 +3,14 @@ import { onMounted, ref } from 'vue'
 import api from '../api'
 import { formatMoney } from '../money'
 import { deliveryMethods } from '../labels'
+import { site } from '../stores/site'
 
 const orders = ref([])
 const loading = ref(true)
+
+// «Оплатить» только там, где есть чем: без онлайн-оплаты заказ ждёт счёта
+// от менеджера, и кнопка обещала бы несуществующее.
+const payableNow = (order) => order.status === 'awaiting_payment' && site.state.online_payment
 
 const statuses = {
     awaiting_payment: 'Ожидает оплаты',
@@ -54,9 +59,9 @@ onMounted(async () => {
                     <td class="py-3 text-right">
                         <RouterLink
                             :to="{ name: 'payment', params: { number: order.number } }"
-                            :class="order.status === 'awaiting_payment' ? payButton : detailsButton"
+                            :class="payableNow(order) ? payButton : detailsButton"
                         >
-                            {{ order.status === 'awaiting_payment' ? 'Оплатить' : 'Подробнее' }}
+                            {{ payableNow(order) ? 'Оплатить' : 'Подробнее' }}
                         </RouterLink>
                     </td>
                 </tr>

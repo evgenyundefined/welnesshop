@@ -19,6 +19,7 @@ class YooKassaPaymentTest extends TestCase
     {
         parent::setUp();
 
+        config()->set('shop.integrations.online_payment', true);
         config()->set('services.yookassa.shop_id', '123456');
         config()->set('services.yookassa.secret_key', 'test_secret');
         config()->set('services.yookassa.base_url', 'https://api.yookassa.ru/v3');

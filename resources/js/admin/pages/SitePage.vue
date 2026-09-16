@@ -92,7 +92,9 @@ async function remove(endpoint) {
 
 function state(integration) {
     if (!integration.enabled) {
-        return 'Выключена'
+        // Ключи на месте, но покупателю интеграция не предлагается — это
+        // другое состояние, чем «не настроена», и искать нужно разное.
+        return integration.configured ? 'Отключена' : 'Не настроена'
     }
 
     return integration.test ? 'Тестовый контур' : 'Боевой контур'
@@ -141,8 +143,9 @@ const removeLogo = () => remove('/site/logo')
             </div>
 
             <p class="text-xs text-ink-400">
-                Переключается переменными окружения: <code>CDEK_TEST</code> для доставки,
-                тестовым ключом <code>test_…</code> для оплаты. Задаются в панели хостинга.
+                Включается переменными окружения: <code>SHOP_CDEK_ENABLED</code> и
+                <code>SHOP_ONLINE_PAYMENT_ENABLED</code>. Контур — <code>CDEK_TEST</code> для доставки
+                и тестовым ключом <code>test_…</code> для оплаты. Задаются в панели хостинга.
             </p>
         </section>
 

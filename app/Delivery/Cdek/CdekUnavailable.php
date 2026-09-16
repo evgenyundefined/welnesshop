@@ -22,6 +22,11 @@ class CdekUnavailable extends ShopException
         return new self('Доставка СДЭК не настроена: не заданы CDEK_ACCOUNT, CDEK_PASSWORD или CDEK_FROM_CITY_CODE.');
     }
 
+    public static function disabled(): self
+    {
+        return new self('Доставка СДЭК временно недоступна.');
+    }
+
     public function status(): int
     {
         return Response::HTTP_UNPROCESSABLE_ENTITY;

@@ -21,11 +21,17 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // ЮKassa takes over as soon as its credentials are configured; without
-        // them the shop keeps taking orders and says payment is not connected.
-        $this->app->bind(PaymentGateway::class, static fn (Application $app): PaymentGateway => YooKassaGateway::isConfigured($app->make(Config::class))
-            ? $app->make(YooKassaGateway::class)
-            : $app->make(PendingPaymentGateway::class));
+        // ЮKassa takes over as soon as its credentials are configured and the
+        // shop has online payment switched on; otherwise the shop keeps taking
+        // orders and says payment is not available. The switch is separate from
+        // the credentials so turning it off costs nothing to undo.
+        $this->app->bind(PaymentGateway::class, static function (Application $app): PaymentGateway {
+            $config = $app->make(Config::class);
+
+            return $config->boolean('shop.integrations.online_payment') && YooKassaGateway::isConfigured($config)
+                ? $app->make(YooKassaGateway::class)
+                : $app->make(PendingPaymentGateway::class);
+        });
 
         // Both guards are named rather than taken from the default, which the
         // auth middleware rewrites for the rest of the request as soon as it

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Cart;
 
+use App\Exceptions\BelowMinimumQuantity;
 use App\Exceptions\CartItemNotFound;
 use App\Exceptions\ProductNotAvailable;
 use App\Models\Cart;
@@ -13,6 +14,7 @@ class UpdateCartItemQuantity
     public function __construct(private readonly Config $config) {}
 
     /**
+     * @throws BelowMinimumQuantity
      * @throws CartItemNotFound
      * @throws ProductNotAvailable
      */
@@ -28,6 +30,10 @@ class UpdateCartItemQuantity
 
         if (! $product->status->isVisibleInCatalog() || ! $withinStock || ! $withinLimit) {
             throw ProductNotAvailable::forProduct($product);
+        }
+
+        if ($quantity < $product->minOrderQuantity()) {
+            throw BelowMinimumQuantity::forProduct($product);
         }
 
         $item->update(['quantity' => $quantity]);

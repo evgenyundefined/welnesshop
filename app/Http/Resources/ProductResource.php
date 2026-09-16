@@ -31,6 +31,10 @@ class ProductResource extends JsonResource
             'currency' => $this->resource->currency,
             'stock_level' => $stockLevel->value,
             'stock_label' => $stockLevel->label(),
+            // Carried by the product itself: the catalog grid shows the terms
+            // on every card and has no use for the whole category.
+            'wholesale_only' => $this->resource->isWholesaleOnly(),
+            'min_order_quantity' => $this->resource->minOrderQuantity(),
             'weight_grams' => $this->resource->weight_grams,
             'is_available' => $this->resource->isAvailable(),
             'category' => new CategoryResource($this->whenLoaded('category')),

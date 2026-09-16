@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Cart\ResolveCart;
 use App\Actions\Delivery\PriceDelivery;
+use App\Actions\Orders\AnnounceOrder;
 use App\Actions\Orders\PlaceOrder;
 use App\Delivery\Cdek\CdekUnavailable;
 use App\Exceptions\CartIsEmpty;
@@ -27,6 +28,7 @@ class CheckoutController extends Controller
         ResolveCart $resolveCart,
         PriceDelivery $priceDelivery,
         PlaceOrder $placeOrder,
+        AnnounceOrder $announceOrder,
     ): JsonResponse {
         /** @var Customer $customer */
         $customer = $request->user();
@@ -37,7 +39,13 @@ class CheckoutController extends Controller
         // reaches the order is the one the carrier quotes at this moment.
         $delivery = $priceDelivery($cart, $details['delivery_method'], $request->deliverySelection());
 
-        return (new OrderResource($placeOrder($customer, $cart, [...$details, ...$delivery])))
+        $order = $placeOrder($customer, $cart, [...$details, ...$delivery]);
+
+        // After the order exists, never inside its transaction: a mail server
+        // that is down must not roll back stock that is already committed.
+        $announceOrder($order);
+
+        return (new OrderResource($order))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }

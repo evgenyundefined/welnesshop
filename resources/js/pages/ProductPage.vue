@@ -17,6 +17,7 @@ const added = ref(false)
 onMounted(async () => {
     const { data } = await api.get(`/products/${props.slug}`)
     product.value = data.data
+    quantity.value = product.value.min_order_quantity
     setDocumentTitle(product.value.name)
     setMetaDescription(product.value.summary)
     shown.value = data.data.images?.[0] ?? null
@@ -97,13 +98,25 @@ async function addToCart() {
                 </dl>
 
                 <div class="flex flex-wrap items-center justify-between gap-4 border-t border-ink-200 pt-4">
-                    <span class="text-2xl font-bold">{{ formatMoney(product.price_minor, product.currency) }}</span>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-2xl font-bold">{{ formatMoney(product.price_minor, product.currency) }}</span>
+                        <span
+                            v-if="product.wholesale_only"
+                            class="rounded-md bg-gold-100 px-2 py-1 text-xs font-semibold text-gold-800"
+                        >
+                            Только для оптовых закупок
+                        </span>
+                        <span v-if="product.min_order_quantity > 1" class="text-xs text-ink-500">
+                            Минимальный заказ — {{ product.min_order_quantity }} шт.
+                        </span>
+                    </div>
 
                     <div class="flex items-center gap-3">
                         <input
                             v-model="quantity"
                             type="number"
-                            min="1"
+                            :min="product.min_order_quantity"
+                            :step="product.min_order_quantity > 1 ? product.min_order_quantity : 1"
                             :max="site.state.max_item_quantity"
                             class="w-20 rounded-lg border border-ink-300 px-3 py-2 text-sm outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
                         >

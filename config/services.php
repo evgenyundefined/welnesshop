@@ -22,6 +22,14 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    // Необязательное дублирование уведомлений о заказах в чат. Пусто — ничего
+    // не отправляется, письма при этом уходят как обычно.
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'timeout' => (int) env('TELEGRAM_TIMEOUT', 10),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

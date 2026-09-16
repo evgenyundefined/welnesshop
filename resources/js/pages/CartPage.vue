@@ -62,11 +62,17 @@ function goToCheckout() {
                                 <span>{{ item.product.name }}</span>
                             </RouterLink>
                         </td>
-                        <td class="py-3 pr-4 whitespace-nowrap">{{ formatMoney(item.unit_price_minor, cart.currency) }}</td>
+                        <td class="py-3 pr-4 whitespace-nowrap">
+                            {{ formatMoney(item.unit_price_minor, cart.currency) }}
+                            <span v-if="item.product.wholesale_only" class="block text-xs text-gold-700">
+                                Только для оптовых закупок
+                            </span>
+                        </td>
                         <td class="py-3 pr-4">
                             <input
                                 type="number"
-                                min="1"
+                                :min="item.product.min_order_quantity"
+                                :step="item.product.min_order_quantity > 1 ? item.product.min_order_quantity : 1"
                                 :max="site.state.max_item_quantity"
                                 :value="item.quantity"
                                 class="w-20 rounded-lg border border-ink-300 px-2 py-1.5 outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500"

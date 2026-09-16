@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['slug', 'name', 'description', 'position'])]
+#[Fillable(['slug', 'name', 'description', 'position', 'wholesale_only', 'min_order_quantity'])]
 #[RouteKey('slug')]
 class Category extends Model
 {
@@ -27,6 +27,8 @@ class Category extends Model
     {
         return [
             'position' => 'integer',
+            'wholesale_only' => 'boolean',
+            'min_order_quantity' => 'integer',
         ];
     }
 }

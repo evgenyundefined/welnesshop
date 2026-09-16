@@ -34,6 +34,15 @@ class CdekClient
             && $this->config->get('services.cdek.from_city_code') !== null;
     }
 
+    /**
+     * Configured is not the same as offered: the shop can switch the carrier
+     * off for a while without losing its credentials.
+     */
+    public function isEnabled(): bool
+    {
+        return $this->config->boolean('shop.integrations.cdek') && $this->isConfigured();
+    }
+
     /** @return Collection<int, CdekCity> */
     public function cities(string $query, int $limit = 10): Collection
     {
@@ -138,6 +147,10 @@ class CdekClient
     {
         if (! $this->isConfigured()) {
             throw CdekUnavailable::notConfigured();
+        }
+
+        if (! $this->isEnabled()) {
+            throw CdekUnavailable::disabled();
         }
 
         try {

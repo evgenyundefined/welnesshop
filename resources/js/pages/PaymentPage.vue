@@ -12,7 +12,9 @@ const order = ref(null)
 
 // A settled order is not paid again: the endpoint refuses it, and a button
 // that only produces an error has no business being on the page.
-const payable = computed(() => order.value?.status === 'awaiting_payment')
+// Оплатить можно только то, что действительно можно оплатить: без
+// подключённой онлайн-оплаты кнопка вела бы в отказ.
+const payable = computed(() => order.value?.status === 'awaiting_payment' && site.state.online_payment)
 
 const deliverySummary = computed(() => {
     const row = order.value
@@ -35,6 +37,18 @@ const deliveryTerm = computed(() => {
 
     return max && max !== min ? `${min}–${max} дн.` : `${min} дн.`
 })
+const settlement = computed(() => {
+    if (order.value?.status === 'paid') {
+        return 'Заказ оплачен'
+    }
+
+    if (order.value?.status === 'cancelled') {
+        return 'Заказ отменён, оплата недоступна'
+    }
+
+    return 'Оплата по счёту от менеджера'
+})
+
 const payment = ref(null)
 const error = ref('')
 const pending = ref(false)
@@ -78,14 +92,15 @@ async function pay() {
 
 <template>
     <div v-if="order" class="space-y-5">
-        <h1 class="text-2xl font-bold tracking-tight">Оплата заказа {{ order.number }}</h1>
+        <h1 class="text-2xl font-bold tracking-tight">
+            {{ site.state.online_payment ? 'Оплата заказа' : 'Заказ' }} {{ order.number }}
+        </h1>
 
         <p
             v-if="!site.state.online_payment"
-            class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            class="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
         >
-            Платёжный провайдер ещё не подключён. Заказ создан и зарезервирован, оплата станет доступна после
-            подключения платёжного шлюза.
+            Ваш заказ принят. С вами свяжется менеджер для подтверждения заказа и согласования деталей.
         </p>
 
         <dl class="grid gap-3 rounded-xl border border-ink-200 bg-white p-6 text-sm sm:grid-cols-[200px_1fr]">
@@ -155,7 +170,7 @@ async function pay() {
             </button>
 
             <span v-else class="text-sm" :class="order.status === 'paid' ? 'text-emerald-700' : 'text-ink-500'">
-                {{ order.status === 'paid' ? 'Заказ оплачен' : 'Заказ отменён, оплата недоступна' }}
+                {{ settlement }}
             </span>
         </div>
 

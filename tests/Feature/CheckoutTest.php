@@ -17,7 +17,7 @@ class CheckoutTest extends TestCase
         'contact_phone' => '+79990000000',
         'shipping_address' => 'Москва, Тверская 1',
         'comment' => 'Позвонить заранее',
-        'payment_method' => 'card',
+        'payment_method' => 'on_agreement',
         'delivery_method' => 'courier',
     ];
 

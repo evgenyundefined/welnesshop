@@ -14,7 +14,7 @@ class ValidationTest extends TestCase
         'contact_email' => 'ivan@example.com',
         'contact_phone' => '+79990000000',
         'shipping_address' => 'Москва, Тверская 1',
-        'payment_method' => 'card',
+        'payment_method' => 'on_agreement',
         'delivery_method' => 'courier',
     ];
 

@@ -21,7 +21,7 @@ class ResourceShapeTest extends TestCase
         'contact_phone' => '+79990000000',
         'shipping_address' => 'Москва, Тверская 1',
         'comment' => 'Позвонить заранее',
-        'payment_method' => 'sbp',
+        'payment_method' => 'on_agreement',
         'delivery_method' => 'courier',
     ];
 
@@ -43,6 +43,8 @@ class ResourceShapeTest extends TestCase
             'name' => 'Пептиды',
             'description' => 'Пептидные соединения',
             'position' => 20,
+            'wholesale_only' => false,
+            'min_order_quantity' => 1,
             'products_count' => 2,
         ], $payload);
     }
@@ -77,6 +79,8 @@ class ResourceShapeTest extends TestCase
                     'currency' => 'RUB',
                     'stock_level' => 'few',
                     'stock_label' => 'Мало',
+                    'wholesale_only' => false,
+                    'min_order_quantity' => 1,
                     'weight_grams' => null,
                     'is_available' => true,
                     'category' => [
@@ -85,6 +89,8 @@ class ResourceShapeTest extends TestCase
                         'name' => $category->name,
                         'description' => $category->description,
                         'position' => $category->position,
+                        'wholesale_only' => false,
+                        'min_order_quantity' => 1,
                     ],
                     'images' => [],
                 ],
@@ -302,7 +308,7 @@ class ResourceShapeTest extends TestCase
                     'number' => $number,
                     'status' => 'awaiting_payment',
                     'payment_status' => 'pending',
-                    'payment_method' => 'sbp',
+                    'payment_method' => 'on_agreement',
                     'delivery_method' => 'courier',
                     'delivery_cost_minor' => 0,
                     'delivery_days_min' => null,

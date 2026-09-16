@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\DeliveryMethod;
+use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
@@ -19,7 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
  *     categories: Collection<int, Category>,
  *     products: Collection<int, Product>,
  *     online_payment: bool,
- *     max_item_quantity: int
+ *     max_item_quantity: int,
+ *     delivery_methods: list<DeliveryMethod>,
+ *     payment_methods: list<PaymentMethod>
  * } $resource
  */
 class SiteResource extends JsonResource
@@ -32,6 +36,17 @@ class SiteResource extends JsonResource
         return [
             'online_payment' => $this->resource['online_payment'],
             'max_item_quantity' => $this->resource['max_item_quantity'],
+            // Named here rather than in the checkout form: what the shop
+            // offers is decided in one place and validated against the same
+            // list when the order comes back.
+            'delivery_methods' => array_map(static fn (DeliveryMethod $method): array => [
+                'value' => $method->value,
+                'label' => $method->label(),
+            ], $this->resource['delivery_methods']),
+            'payment_methods' => array_map(static fn (PaymentMethod $method): array => [
+                'value' => $method->value,
+                'label' => $method->label(),
+            ], $this->resource['payment_methods']),
             'logo_url' => $settings->logo_image_url,
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [

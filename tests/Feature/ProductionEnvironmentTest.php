@@ -41,16 +41,22 @@ class ProductionEnvironmentTest extends TestCase
     {
         $names = [];
 
-        foreach (['shop', 'services'] as $file) {
+        foreach (['shop', 'services', 'mail'] as $file) {
             preg_match_all("/env\\('([A-Z0-9_]+)'/", (string) file_get_contents(config_path("{$file}.php")), $matches);
             $names = [...$names, ...$matches[1]];
         }
 
-        // services.php also carries Laravel's stock mail drivers, which this
-        // shop does not use.
-        $ours = array_filter($names, static fn (string $name): bool => str_starts_with($name, 'SHOP_')
-            || str_starts_with($name, 'CDEK_')
-            || str_starts_with($name, 'YOOKASSA_'));
+        // Both files also carry Laravel's stock third-party drivers, which
+        // this shop does not use; MAIL_ is kept because order notifications
+        // depend on it, minus the per-driver settings we never touch.
+        $prefixes = ['SHOP_', 'CDEK_', 'YOOKASSA_', 'TELEGRAM_', 'MAIL_'];
+        $ignored = ['MAIL_EHLO_DOMAIN', 'MAIL_SENDMAIL_PATH', 'MAIL_LOG_CHANNEL', 'MAIL_URL', 'MAIL_ENCRYPTION'];
+
+        $ours = array_filter(
+            $names,
+            static fn (string $name): bool => ! in_array($name, $ignored, true)
+                && array_any($prefixes, static fn (string $prefix): bool => str_starts_with($name, $prefix)),
+        );
 
         return array_values(array_unique($ours));
     }

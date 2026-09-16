@@ -14,7 +14,7 @@ async function addToCart() {
     pending.value = true
 
     try {
-        await session.addToCart(props.product.id, 1)
+        await session.addToCart(props.product.id, props.product.min_order_quantity)
     } catch (e) {
         error.value = messageFrom(e, 'Не удалось добавить товар')
     } finally {
@@ -103,6 +103,13 @@ async function addToCart() {
                     {{ product.is_available ? 'В корзину' : 'Нет в наличии' }}
                 </button>
             </div>
+
+            <p v-if="product.wholesale_only" class="text-xs font-semibold text-gold-700">
+                Только для оптовых закупок · от {{ product.min_order_quantity }} шт.
+            </p>
+            <p v-else-if="product.min_order_quantity > 1" class="text-xs text-ink-400">
+                Минимальный заказ — {{ product.min_order_quantity }} шт.
+            </p>
 
             <p v-if="error" class="text-sm text-red-700">{{ error }}</p>
         </div>

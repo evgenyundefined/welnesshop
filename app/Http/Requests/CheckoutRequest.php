@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\Checkout\AvailableDeliveryMethods;
+use App\Actions\Checkout\AvailablePaymentMethods;
 use App\Enums\CdekDestination;
 use App\Enums\DeliveryMethod;
 use App\Enums\PaymentMethod;
@@ -21,13 +23,17 @@ class CheckoutRequest extends FormRequest
     }
 
     /** @return array<string, list<mixed>> */
-    public function rules(): array
-    {
+    public function rules(
+        AvailableDeliveryMethods $deliveryMethods,
+        AvailablePaymentMethods $paymentMethods,
+    ): array {
         return [
             'contact_name' => ['required', 'string', 'between:2,255'],
             'contact_email' => ['required', 'string', 'email', 'max:255'],
             'contact_phone' => ['required', 'string', 'regex:'.PhoneNumber::PATTERN],
-            'delivery_method' => ['required', Rule::enum(DeliveryMethod::class)],
+            // Only what the shop currently offers: a switched-off carrier or
+            // gateway is refused here, not just hidden in the form.
+            'delivery_method' => ['required', Rule::enum(DeliveryMethod::class)->only($deliveryMethods())],
             // A pickup point is an address of its own, so the buyer is only
             // asked to type one when the parcel is coming to them.
             'shipping_address' => [
@@ -44,7 +50,7 @@ class CheckoutRequest extends FormRequest
             'cdek_tariff_code' => [Rule::requiredIf($this->deliversByCarrier()), 'nullable', 'integer', 'min:1'],
             'cdek_point_code' => [Rule::requiredIf(fn (): bool => $this->deliversToPoint()), 'nullable', 'string', 'max:32'],
             'comment' => ['nullable', 'string', 'max:1000'],
-            'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
+            'payment_method' => ['required', Rule::enum(PaymentMethod::class)->only($paymentMethods())],
         ];
     }
 

@@ -25,6 +25,8 @@ class IntegrationContourTest extends TestCase
     {
         $this->signInAdmin();
 
+        config()->set('shop.integrations.cdek', true);
+        config()->set('shop.integrations.online_payment', true);
         config()->set('services.cdek.account', 'account');
         config()->set('services.cdek.password', 'secret');
         config()->set('services.cdek.from_city_code', 44);
@@ -47,6 +49,7 @@ class IntegrationContourTest extends TestCase
     {
         $this->signInAdmin();
 
+        config()->set('shop.integrations.online_payment', true);
         config()->set('services.yookassa.shop_id', '123456');
         config()->set('services.yookassa.secret_key', 'live_nZtcU');
 

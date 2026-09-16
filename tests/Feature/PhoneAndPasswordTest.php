@@ -81,7 +81,7 @@ class PhoneAndPasswordTest extends TestCase
             'contact_phone' => '8(999)123-45-67',
             'delivery_method' => 'courier',
             'shipping_address' => 'Москва, Тверская 1',
-            'payment_method' => 'card',
+            'payment_method' => 'on_agreement',
         ])
             ->assertCreated()
             ->assertJsonPath('data.contact_phone', '+7 999 123 45 67');

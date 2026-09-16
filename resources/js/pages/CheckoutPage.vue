@@ -7,7 +7,7 @@ import api, { fieldErrorsFrom, messageFrom } from '../api'
 import FormField from '../components/FormField.vue'
 import { useFormErrors } from '../formErrors'
 import PhoneInput from '../components/PhoneInput.vue'
-import { deliveryMethods } from '../labels'
+import { site } from '../stores/site'
 
 const router = useRouter()
 const cart = computed(() => session.state.cart)
@@ -19,12 +19,29 @@ const form = reactive({
     delivery_method: 'courier',
     shipping_address: '',
     comment: '',
-    payment_method: 'card',
+    payment_method: '',
     cdek_city_code: null,
     cdek_destination: 'point',
     cdek_point_code: null,
     cdek_tariff_code: null,
 })
+
+// Списки приходят с сервера: он же их и проверяет, поэтому форма не может
+// предложить способ, который на checkout будет отклонён.
+const deliveryMethods = computed(() => site.state.delivery_methods)
+const paymentMethods = computed(() => site.state.payment_methods)
+
+watch(paymentMethods, (methods) => {
+    if (! methods.some((method) => method.value === form.payment_method)) {
+        form.payment_method = methods[0]?.value ?? ''
+    }
+}, { immediate: true })
+
+watch(deliveryMethods, (methods) => {
+    if (! methods.some((method) => method.value === form.delivery_method)) {
+        form.delivery_method = methods[0]?.value ?? ''
+    }
+}, { immediate: true })
 
 const byCarrier = computed(() => form.delivery_method === 'cdek')
 const toPoint = computed(() => byCarrier.value && form.cdek_destination === 'point')
@@ -193,15 +210,17 @@ async function submit() {
 
         <FormField id="payment_method" label="Способ оплаты" :error="errors.payment_method">
             <select id="payment_method" v-model="form.payment_method" :class="inputClass">
-                <option value="card">Банковская карта</option>
-                <option value="sbp">СБП</option>
-                <option value="invoice">Счёт для юридических лиц</option>
+                <option v-for="method in paymentMethods" :key="method.value" :value="method.value">
+                    {{ method.label }}
+                </option>
             </select>
         </FormField>
 
         <FormField id="delivery_method" label="Доставка" :error="errors.delivery_method">
             <select id="delivery_method" v-model="form.delivery_method" :class="inputClass">
-                <option v-for="(label, value) in deliveryMethods" :key="value" :value="value">{{ label }}</option>
+                <option v-for="method in deliveryMethods" :key="method.value" :value="method.value">
+                    {{ method.label }}
+                </option>
             </select>
         </FormField>
 
