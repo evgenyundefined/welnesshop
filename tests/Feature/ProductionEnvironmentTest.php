@@ -25,6 +25,52 @@ class ProductionEnvironmentTest extends TestCase
         );
     }
 
+    /**
+     * A service whose image is built on the machine has to say so, or the
+     * deploy tries to pull it from a registry where it has never existed and
+     * stops the whole stack with "pull access denied".
+     */
+    public function test_every_locally_built_service_declares_its_build(): void
+    {
+        $built = $this->servicesRunningALocalImage();
+
+        $this->assertNotEmpty($built, 'the production stack no longer names a locally built image');
+
+        preg_match_all('/^  ([a-z0-9-]+):/m', (string) file_get_contents(base_path('docker-compose.build.yml')), $declared);
+
+        $missing = array_values(array_diff($built, $declared[1]));
+
+        $this->assertSame([], $missing, 'add to docker-compose.build.yml: '.implode(', ', $missing));
+    }
+
+    /**
+     * Service names in docker-compose.prod.yml whose image is one this
+     * repository builds rather than one a registry serves.
+     *
+     * @return list<string>
+     */
+    private function servicesRunningALocalImage(): array
+    {
+        $lines = explode("\n", (string) file_get_contents(base_path('docker-compose.prod.yml')));
+
+        $service = null;
+        $built = [];
+
+        foreach ($lines as $line) {
+            if (preg_match('/^  ([a-z0-9-]+):$/', $line, $name) === 1) {
+                $service = $name[1];
+
+                continue;
+            }
+
+            if ($service !== null && preg_match('/^    image: .*\$\{(APP|NGINX)_IMAGE/', $line) === 1) {
+                $built[] = $service;
+            }
+        }
+
+        return $built;
+    }
+
     /** @return list<string> */
     private function appServiceEnvironment(): array
     {

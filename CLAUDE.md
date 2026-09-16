@@ -140,6 +140,17 @@ http- или https-вариант по наличию сертификата н�
 
 Обратно включается переменной окружения и перезапуском, ничего в коде.
 
+## Сборка образов
+
+Каждый сервис в `docker-compose.prod.yml`, который запускает собранный здесь
+образ (`${APP_IMAGE}` или `${NGINX_IMAGE}`), обязан быть объявлен в
+`docker-compose.build.yml` с `pull_policy: build`. Иначе деплой пойдёт искать
+этот образ в реестре, где его никогда не было, и весь стек встанет с «pull
+access denied» — так и случилось, когда появился сервис `queue`.
+
+`ProductionEnvironmentTest::test_every_locally_built_service_declares_its_build`
+падает, если сервис забыли.
+
 ## Уведомления о заказе
 
 `AnnounceOrder` вызывается из `CheckoutController` **после** `PlaceOrder`, а не

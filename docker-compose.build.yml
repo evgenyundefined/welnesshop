@@ -4,10 +4,21 @@
 #
 #   docker compose -f docker-compose.prod.yml -f docker-compose.build.yml build
 #
-# pull_policy pins these two services to the local build: their images exist
-# nowhere to pull from, and a registry lookup for them is always an error.
+# pull_policy pins these services to the local build: their images exist
+# nowhere to pull from, and a registry lookup for them is always an error --
+# Portainer reports it as "pull access denied" and the whole stack stops.
+#
+# Every service in docker-compose.prod.yml that runs a locally built image
+# must appear here. ProductionEnvironmentTest fails if one is forgotten.
 services:
   app:
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+
+  # The same image as app, running the queue worker instead of php-fpm.
+  queue:
     pull_policy: build
     build:
       context: .
