@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Actions\Orders\PlaceOrder;
+use App\Enums\Currency;
 use App\Enums\DeliveryMethod;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -152,9 +153,9 @@ class PlaceOrderTest extends TestCase
 
     public function test_the_order_currency_comes_from_configuration(): void
     {
-        config()->set('shop.currency', 'EUR');
+        config()->set('shop.currency', 'USD');
 
-        $this->assertSame('EUR', $this->place(['stock' => 5], 1)->currency);
+        $this->assertSame(Currency::Usd, $this->place(['stock' => 5], 1)->currency);
     }
 
     public function test_it_retries_until_the_generated_number_is_free(): void

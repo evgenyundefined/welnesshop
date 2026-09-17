@@ -7,7 +7,6 @@ use App\Mail\OrderPlacedMail;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Notifications\TelegramChat;
-use App\Support\Money;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -54,7 +53,7 @@ class AnnounceOrder implements ShouldQueue
                 '• %s — %d шт. · %s',
                 $item->product_name,
                 $item->quantity,
-                Money::format($item->total_minor, $order->currency),
+                $order->currency->format($item->total_minor),
             ))
             ->implode("\n");
 
@@ -67,7 +66,7 @@ class AnnounceOrder implements ShouldQueue
             '',
             $lines,
             '',
-            'Итого: '.Money::format($order->total_minor, $order->currency),
+            'Итого: '.$order->currency->format($order->total_minor),
         ], static fn (string $line): bool => $line !== '' || true));
     }
 }

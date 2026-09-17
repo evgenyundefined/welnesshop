@@ -50,7 +50,7 @@ final readonly class YooKassaGateway implements PaymentGateway
             ->post('/payments', [
                 'amount' => [
                     'value' => number_format($order->total_minor / 100, 2, '.', ''),
-                    'currency' => $order->currency,
+                    'currency' => $order->currency->value,
                 ],
                 'capture' => true,
                 'description' => "Заказ {$order->number}",
@@ -85,7 +85,7 @@ final readonly class YooKassaGateway implements PaymentGateway
                 $item->unit_price_minor,
                 $item->quantity,
                 'commodity',
-                $order->currency,
+                $order->currency->value,
             ))
             ->all();
 
@@ -95,7 +95,7 @@ final readonly class YooKassaGateway implements PaymentGateway
                 $order->delivery_cost_minor,
                 1,
                 'service',
-                $order->currency,
+                $order->currency->value,
             );
         }
 

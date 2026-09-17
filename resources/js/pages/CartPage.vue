@@ -63,7 +63,13 @@ function goToCheckout() {
                             </RouterLink>
                         </td>
                         <td class="py-3 pr-4 whitespace-nowrap">
-                            {{ formatMoney(item.unit_price_minor, cart.currency) }}
+                            {{ formatMoney(item.original_unit_price_minor, item.original_currency) }}
+                            <span
+                                v-if="item.original_currency !== cart.currency"
+                                class="block text-xs text-ink-400"
+                            >
+                                {{ formatMoney(item.unit_price_minor, cart.currency) }} по курсу ЦБ
+                            </span>
                             <span v-if="item.product.wholesale_only" class="block text-xs text-gold-700">
                                 Только для оптовых закупок
                             </span>

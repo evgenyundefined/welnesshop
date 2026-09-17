@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\Currency;
 use App\Enums\ProductStatus;
 use App\Models\Category;
 use App\Models\Product;
@@ -38,7 +39,7 @@ class CatalogSeederTest extends TestCase
     {
         $this->seed(CatalogSeeder::class);
 
-        $currency = config()->string('shop.currency');
+        $currency = Currency::from(config()->string('shop.currency'));
 
         Product::query()->with('category')->each(function (Product $product) use ($currency): void {
             $this->assertSame(ProductStatus::Published, $product->status);

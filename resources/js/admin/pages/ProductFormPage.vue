@@ -24,6 +24,7 @@ const form = reactive({
     source_url: '',
     status: 'published',
     price: '',
+    currency: 'RUB',
     stock: 0,
     weight_grams: '',
 })
@@ -44,6 +45,7 @@ onMounted(async () => {
             source_url: product.data.source_url ?? '',
             status: product.data.status,
             price: product.data.price_minor / 100,
+            currency: product.data.currency,
             stock: product.data.stock,
             weight_grams: product.data.weight_grams ?? '',
         })
@@ -69,6 +71,7 @@ async function submit() {
         source_url: form.source_url || null,
         status: form.status,
         price_minor: Math.round(Number(form.price) * 100),
+        currency: form.currency,
         stock: Number(form.stock),
         weight_grams: form.weight_grams === '' || form.weight_grams === null ? null : Number(form.weight_grams),
     }
@@ -122,9 +125,27 @@ async function submit() {
             </div>
 
             <div>
-                <label for="price" class="mb-1.5 block text-sm text-ink-500">Цена, ₽</label>
-                <input id="price" v-model="form.price" type="number" min="0.01" step="0.01" required :class="input">
+                <label for="price" class="mb-1.5 block text-sm text-ink-500">Цена</label>
+                <div class="flex gap-2">
+                    <input
+                        id="price"
+                        v-model="form.price"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        :class="input"
+                    >
+                    <select v-model="form.currency" :class="input" class="w-28" aria-label="Валюта цены">
+                        <option value="RUB">₽ RUB</option>
+                        <option value="USD">$ USD</option>
+                    </select>
+                </div>
+                <p class="mt-1 text-xs text-ink-400">
+                    Цена в долларах пересчитывается в рубли по курсу ЦБ на момент заказа.
+                </p>
                 <p v-if="errors.price_minor" class="mt-1 text-sm text-red-700">{{ errors.price_minor }}</p>
+                <p v-if="errors.currency" class="mt-1 text-sm text-red-700">{{ errors.currency }}</p>
             </div>
 
             <div>

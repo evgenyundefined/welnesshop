@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Models\Order;
-use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -38,7 +37,7 @@ class OrderPlacedMail extends Mailable implements ShouldQueue
                 'Доставка' => $this->order->delivery_method->label(),
                 'Адрес' => $this->order->shipping_address,
             ]),
-            'money' => fn (int $minor): string => Money::format($minor, $this->order->currency),
+            'money' => fn (int $minor): string => $this->order->currency->format($minor),
             'footer' => 'Письмо отправлено автоматически, отвечать на него не нужно.',
         ]);
     }

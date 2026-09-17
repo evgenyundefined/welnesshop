@@ -96,6 +96,10 @@ services:
       # Необязательное дублирование заказов в чат.
       # Если api.telegram.org с сервера недоступен — сюда адрес зеркала.
       TELEGRAM_API_URL: '${TELEGRAM_API_URL:-https://api.telegram.org}'
+      # Курсы ЦБ для товаров в валюте.
+      CBR_URL: '${CBR_URL:-https://www.cbr.ru/scripts/XML_daily.asp}'
+      CBR_TIMEOUT: '${CBR_TIMEOUT:-8}'
+
       # Если до Telegram нет сети — адрес прокси, например
       # socks5://user:pass@host:1080 или http://host:3128.
       TELEGRAM_PROXY: '${TELEGRAM_PROXY:-}'
@@ -204,6 +208,10 @@ services:
       # Необязательное дублирование заказов в чат.
       # Если api.telegram.org с сервера недоступен — сюда адрес зеркала.
       TELEGRAM_API_URL: '${TELEGRAM_API_URL:-https://api.telegram.org}'
+      # Курсы ЦБ для товаров в валюте.
+      CBR_URL: '${CBR_URL:-https://www.cbr.ru/scripts/XML_daily.asp}'
+      CBR_TIMEOUT: '${CBR_TIMEOUT:-8}'
+
       # Если до Telegram нет сети — адрес прокси, например
       # socks5://user:pass@host:1080 или http://host:3128.
       TELEGRAM_PROXY: '${TELEGRAM_PROXY:-}'

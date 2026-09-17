@@ -8,6 +8,7 @@ use App\Actions\Checkout\AvailablePaymentMethods;
 use App\Actions\Site\ListFooterProducts;
 use App\Actions\Site\ListPages;
 use App\Actions\Site\LoadSiteSettings;
+use App\Exchange\CbrRates;
 use App\Http\Resources\SiteResource;
 use App\Payments\PaymentGateway;
 use Illuminate\Config\Repository as Config;
@@ -23,6 +24,7 @@ class SiteController extends Controller
         Config $config,
         AvailableDeliveryMethods $deliveryMethods,
         AvailablePaymentMethods $paymentMethods,
+        CbrRates $rates,
     ): SiteResource {
         return new SiteResource([
             'settings' => $loadSiteSettings(),
@@ -33,6 +35,8 @@ class SiteController extends Controller
             'max_item_quantity' => $config->integer('shop.max_item_quantity'),
             'delivery_methods' => $deliveryMethods(),
             'payment_methods' => $paymentMethods(),
+            'currency' => $config->string('shop.currency'),
+            'rates' => $rates->rates(),
         ]);
     }
 }

@@ -31,6 +31,10 @@ abstract class TestCase extends BaseTestCase
         config()->set('services.yookassa.secret_key', null);
         config()->set('services.cdek.account', null);
         config()->set('services.cdek.password', null);
+
+        // Адрес ЦБ тоже прибит: иначе тест курса зависел бы от того, что
+        // стоит в .env у запустившего, и ловил бы чужую заглушку.
+        config()->set('services.cbr.url', 'https://www.cbr.ru/scripts/XML_daily.asp');
     }
 
     protected function makeProduct(array $attributes = []): Product

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Models\Order;
-use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -24,7 +23,7 @@ class NewOrderMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Новый заказ {$this->order->number} — ".Money::format($this->order->total_minor, $this->order->currency),
+            subject: "Новый заказ {$this->order->number} — ".$this->order->currency->format($this->order->total_minor),
             replyTo: [$this->order->contact_email],
         );
     }
@@ -42,7 +41,7 @@ class NewOrderMail extends Mailable implements ShouldQueue
                 'Доставка' => $this->order->delivery_method->label(),
                 'Адрес' => $this->order->shipping_address,
             ]),
-            'money' => fn (int $minor): string => Money::format($minor, $this->order->currency),
+            'money' => fn (int $minor): string => $this->order->currency->format($minor),
             'footer' => 'Заказ виден в админке, раздел «Заказы».',
         ]);
     }

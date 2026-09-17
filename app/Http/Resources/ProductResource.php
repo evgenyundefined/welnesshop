@@ -28,7 +28,7 @@ class ProductResource extends JsonResource
             'source_url' => $this->resource->source_url,
             'status' => $this->resource->status->value,
             'price_minor' => $this->resource->price_minor,
-            'currency' => $this->resource->currency,
+            'currency' => $this->resource->currency->value,
             'stock_level' => $stockLevel->value,
             'stock_label' => $stockLevel->label(),
             // Carried by the product itself: the catalog grid shows the terms

@@ -10,6 +10,7 @@ use App\Actions\Cart\UpdateCartItemQuantity;
 use App\Enums\Guard;
 use App\Exceptions\CartItemNotFound;
 use App\Exceptions\ProductNotAvailable;
+use App\Exchange\ConvertMoney;
 use App\Http\Requests\AddCartItemRequest;
 use App\Http\Requests\UpdateCartItemRequest;
 use App\Http\Resources\CartResource;
@@ -25,6 +26,7 @@ class CartController extends Controller
     public function __construct(
         private readonly AuthFactory $auth,
         private readonly ResolveCart $resolveCart,
+        private readonly ConvertMoney $convert,
     ) {}
 
     public function show(Request $request): CartResource
@@ -95,6 +97,6 @@ class CartController extends Controller
 
     private function present(Cart $cart): CartResource
     {
-        return new CartResource($cart->load('items.product.primaryImage'));
+        return new CartResource($cart->load('items.product.primaryImage'), $this->convert);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\Currency;
 use App\Enums\ProductStatus;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,7 +30,7 @@ class SaveProductRequest extends FormRequest
             'source_url' => ['nullable', 'url', 'max:2000'],
             'status' => ['required', Rule::enum(ProductStatus::class)],
             'price_minor' => ['required', 'integer', 'min:1', 'max:'.PHP_INT_MAX],
-            'currency' => ['nullable', 'string', 'size:3'],
+            'currency' => ['nullable', Rule::enum(Currency::class)],
             'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
             'weight_grams' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ];
@@ -53,6 +54,12 @@ class SaveProductRequest extends FormRequest
         if (! $this->filled('slug')) {
             $this->merge(['slug' => Str::slug($this->string('name')->toString(), '-', 'ru') ?: null]);
         }
+
+        // Код валюты остаётся нечувствительным к регистру, каким был до
+        // перехода на enum: usd от интеграции — это тот же доллар.
+        if ($this->filled('currency')) {
+            $this->merge(['currency' => Str::upper($this->string('currency')->toString())]);
+        }
     }
 
     /** @return array<string, mixed> */
@@ -71,8 +78,8 @@ class SaveProductRequest extends FormRequest
             'status' => $this->enum('status', ProductStatus::class),
             'price_minor' => $this->integer('price_minor'),
             'currency' => $this->filled('currency')
-                ? Str::upper($this->string('currency')->toString())
-                : $config->string('shop.currency'),
+                ? $this->enum('currency', Currency::class)
+                : Currency::from($config->string('shop.currency')),
             'stock' => $this->integer('stock'),
             'weight_grams' => $this->filled('weight_grams') ? $this->integer('weight_grams') : null,
         ];

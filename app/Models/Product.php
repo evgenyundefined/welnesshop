@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Currency;
 use App\Enums\ProductStatus;
 use App\Enums\StockLevel;
 use Database\Factories\ProductFactory;
@@ -105,6 +106,7 @@ class Product extends Model
     {
         return [
             'status' => ProductStatus::class,
+            'currency' => Currency::class,
             'price_minor' => 'integer',
             'weight_grams' => 'integer',
             'stock' => 'integer',

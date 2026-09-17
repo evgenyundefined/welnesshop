@@ -9,6 +9,8 @@ const state = reactive({
     max_item_quantity: 99,
     delivery_methods: [],
     payment_methods: [],
+    currency: 'RUB',
+    rates: {},
     logo_url: null,
     contacts_html: null,
     info_html: null,

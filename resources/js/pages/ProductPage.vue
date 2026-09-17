@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { setDocumentTitle, setMetaDescription } from '../documentTitle'
 import api, { messageFrom } from '../api'
 import { session } from '../stores/session'
 import { site } from '../stores/site'
-import { formatMoney } from '../money'
+import { formatMoney, settlementHint } from '../money'
 
 const props = defineProps({ slug: { type: String, required: true } })
 
@@ -13,6 +13,10 @@ const shown = ref(null)
 const quantity = ref(1)
 const error = ref('')
 const added = ref(false)
+
+const priceHint = computed(() => (product.value
+    ? settlementHint(product.value.price_minor, product.value.currency, site.state)
+    : ''))
 
 onMounted(async () => {
     const { data } = await api.get(`/products/${props.slug}`)
@@ -100,6 +104,7 @@ async function addToCart() {
                 <div class="flex flex-wrap items-center justify-between gap-4 border-t border-ink-200 pt-4">
                     <div class="flex flex-col gap-0.5">
                         <span class="text-2xl font-bold">{{ formatMoney(product.price_minor, product.currency) }}</span>
+                        <span v-if="priceHint" class="text-xs text-ink-500">{{ priceHint }} при оплате</span>
                         <span
                             v-if="product.wholesale_only"
                             class="rounded-md bg-gold-100 px-2 py-1 text-xs font-semibold text-gold-800"

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Currency;
 use App\Enums\DeliveryMethod;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -66,6 +67,7 @@ class Order extends Model
             'cdek_tariff_code' => 'integer',
             'delivery_days_min' => 'integer',
             'delivery_days_max' => 'integer',
+            'currency' => Currency::class,
             'total_minor' => 'integer',
             'paid_at' => 'datetime',
         ];

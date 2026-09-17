@@ -187,6 +187,8 @@ class ResourceShapeTest extends TestCase
             'quantity' => 3,
             'unit_price_minor' => 500_00,
             'total_minor' => 1_500_00,
+            'original_currency' => 'RUB',
+            'original_unit_price_minor' => 500_00,
         ], collect($response->json('data.items.0'))->except('product')->all());
 
         $this->assertSame($product->id, $response->json('data.items.0.product.id'));

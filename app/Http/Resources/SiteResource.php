@@ -23,7 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
  *     online_payment: bool,
  *     max_item_quantity: int,
  *     delivery_methods: list<DeliveryMethod>,
- *     payment_methods: list<PaymentMethod>
+ *     payment_methods: list<PaymentMethod>,
+ *     currency: string,
+ *     rates: array<string, float>
  * } $resource
  */
 class SiteResource extends JsonResource
@@ -36,6 +38,10 @@ class SiteResource extends JsonResource
         return [
             'online_payment' => $this->resource['online_payment'],
             'max_item_quantity' => $this->resource['max_item_quantity'],
+            // Валюта расчётов и курсы ЦБ: витрина показывает ценник товара в
+            // его валюте, а рядом — во сколько это обойдётся при оплате.
+            'currency' => $this->resource['currency'],
+            'rates' => $this->resource['rates'],
             // Named here rather than in the checkout form: what the shop
             // offers is decided in one place and validated against the same
             // list when the order comes back.

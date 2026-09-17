@@ -1,13 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { session } from '../stores/session'
-import { formatMoney } from '../money'
+import { formatMoney, settlementHint } from '../money'
+import { site } from '../stores/site'
 import { messageFrom } from '../api'
 
 const props = defineProps({ product: { type: Object, required: true } })
 
 const error = ref('')
 const pending = ref(false)
+
+const hint = computed(() => settlementHint(props.product.price_minor, props.product.currency, site.state))
 
 async function addToCart() {
     error.value = ''
@@ -93,7 +96,10 @@ async function addToCart() {
 
         <div class="flex flex-1 flex-col gap-3 p-4">
             <div class="mt-auto flex items-center justify-between gap-3">
-                <span class="text-lg font-bold">{{ formatMoney(product.price_minor, product.currency) }}</span>
+                <span class="flex flex-col leading-tight">
+                    <span class="text-lg font-bold">{{ formatMoney(product.price_minor, product.currency) }}</span>
+                    <span v-if="hint" class="text-xs text-ink-400">{{ hint }}</span>
+                </span>
                 <button
                     type="button"
                     class="rounded-lg bg-gold-400 px-3 py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-300 disabled:cursor-not-allowed disabled:bg-ink-200 disabled:text-ink-400"
