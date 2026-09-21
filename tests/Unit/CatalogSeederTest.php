@@ -35,6 +35,72 @@ class CatalogSeederTest extends TestCase
         $this->assertDatabaseHas('products', ['slug' => 'lmax-climatic', 'name' => 'LMAX CLIMATIC']);
     }
 
+    public function test_a_second_run_never_undoes_an_editors_work(): void
+    {
+        $this->seed(CatalogSeeder::class);
+
+        // Всё, что редактируют руками на живом магазине: тексты, цена, валюта,
+        // остаток, статус, название категории.
+        Category::query()->where('slug', 'ingalyatory')->update(['name' => 'Ингаляторы / очищающие вейпы']);
+
+        Product::query()->where('slug', 'epitalon')->update([
+            'name' => 'Эпиталон 10 мг',
+            'summary' => 'Наше описание, не из исходного списка.',
+            'supplier' => 'Новый поставщик',
+            'price_minor' => 777_00,
+            'currency' => Currency::Usd,
+            'stock' => 3,
+            'status' => ProductStatus::Draft,
+        ]);
+
+        $countBefore = Product::query()->count();
+
+        // Деплой перезапускает контейнер, а с ним и сидер.
+        $this->seed(CatalogSeeder::class);
+
+        $this->assertDatabaseHas('categories', ['slug' => 'ingalyatory', 'name' => 'Ингаляторы / очищающие вейпы']);
+        $this->assertDatabaseHas('products', [
+            'slug' => 'epitalon',
+            'name' => 'Эпиталон 10 мг',
+            'summary' => 'Наше описание, не из исходного списка.',
+            'supplier' => 'Новый поставщик',
+            'price_minor' => 777_00,
+            'currency' => 'USD',
+            'stock' => 3,
+            'status' => ProductStatus::Draft->value,
+        ]);
+        $this->assertSame($countBefore, Product::query()->count());
+    }
+
+    public function test_a_deleted_product_does_not_come_back_with_the_next_deploy(): void
+    {
+        $this->seed(CatalogSeeder::class);
+
+        Product::query()->where('slug', 'epitalon')->delete();
+        $countAfterDelete = Product::query()->count();
+
+        $this->seed(CatalogSeeder::class);
+
+        // Товар убрали из продажи намеренно; перезапуск контейнера — не повод
+        // возвращать его в каталог.
+        $this->assertSame($countAfterDelete, Product::query()->count());
+        $this->assertDatabaseMissing('products', ['slug' => 'epitalon']);
+    }
+
+    public function test_an_empty_catalog_is_filled_again(): void
+    {
+        $this->seed(CatalogSeeder::class);
+        $seeded = Product::query()->count();
+
+        Product::query()->delete();
+        Category::query()->delete();
+
+        // Осознанная перезаливка: таблицу очистили — список наливается заново.
+        $this->seed(CatalogSeeder::class);
+
+        $this->assertSame($seeded, Product::query()->count());
+    }
+
     public function test_every_seeded_product_is_purchasable(): void
     {
         $this->seed(CatalogSeeder::class);

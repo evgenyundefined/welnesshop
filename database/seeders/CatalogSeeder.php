@@ -9,6 +9,18 @@ use Illuminate\Config\Repository as Config;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
+/**
+ * Стартовое наполнение, и только оно: если в каталоге уже есть хоть один
+ * товар, сидер не делает ничего.
+ *
+ * Раньше здесь был updateOrCreate, и каждый деплой возвращал названия,
+ * описания, цены, валюту и остатки к исходному списку — работа редактора
+ * пропадала. Одного отказа от перезаписи мало: пока сидер добавляет
+ * недостающее, удалённый в админке товар воскресал бы при следующем
+ * перезапуске контейнера. Деплой не должен менять каталог вообще.
+ *
+ * Залить список заново — осознанное действие: очистить таблицу товаров.
+ */
 class CatalogSeeder extends Seeder
 {
     /**
@@ -36,10 +48,16 @@ class CatalogSeeder extends Seeder
 
     public function run(): void
     {
+        if (Product::query()->exists()) {
+            $this->command?->info('Каталог не пуст — стартовое наполнение пропущено.');
+
+            return;
+        }
+
         $catalog = $this->catalog();
 
         $categories = collect($catalog['categories'])->mapWithKeys(
-            fn (array $data): array => [$data['slug'] => Category::query()->updateOrCreate(['slug' => $data['slug']], $data)],
+            fn (array $data): array => [$data['slug'] => Category::query()->firstOrCreate(['slug' => $data['slug']], $data)],
         );
 
         $usedSlugs = [];
@@ -48,7 +66,7 @@ class CatalogSeeder extends Seeder
             $slug = $this->uniqueSlug($data['name'], $usedSlugs);
             $usedSlugs[] = $slug;
 
-            Product::query()->updateOrCreate(['slug' => $slug], [
+            Product::query()->firstOrCreate(['slug' => $slug], [
                 'category_id' => $categories[$data['category']]->id,
                 'name' => $data['name'],
                 'summary' => $data['summary'],

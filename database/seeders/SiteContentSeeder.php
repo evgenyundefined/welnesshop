@@ -7,8 +7,14 @@ use App\Models\Page;
 use Illuminate\Database\Seeder;
 
 /**
- * Starting content only. Everything here is created once and never rewritten,
- * so re-running this on every deploy cannot undo an editor's work.
+ * Стартовое наполнение, и только оно.
+ *
+ * Страницы наливаются, лишь когда их нет ни одной: firstOrCreate по slug не
+ * переписывал текст, но возвращал страницу, которую в админке удалили, — и
+ * так на каждом деплое.
+ *
+ * С настройками иначе: заполняются только пустые поля, поэтому новая
+ * настройка получает значение по умолчанию, а заполненную никто не трогает.
  */
 class SiteContentSeeder extends Seeder
 {
@@ -16,8 +22,10 @@ class SiteContentSeeder extends Seeder
 
     public function run(): void
     {
-        foreach ($this->pages() as $position => $page) {
-            Page::query()->firstOrCreate(['slug' => $page['slug']], [...$page, 'position' => $position + 1]);
+        if (! Page::query()->exists()) {
+            foreach ($this->pages() as $position => $page) {
+                Page::query()->create([...$page, 'position' => $position + 1]);
+            }
         }
 
         $settings = ($this->loadSiteSettings)();

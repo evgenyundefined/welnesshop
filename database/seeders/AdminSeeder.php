@@ -12,7 +12,11 @@ class AdminSeeder extends Seeder
 
     public function run(): void
     {
-        Admin::query()->updateOrCreate(
+        // Создаётся, но не переписывается: пароль, сменённый в панели, не
+        // должен откатываться к тому, что лежит в переменных окружения, —
+        // иначе смена пароля после утечки отменяется ближайшим деплоем.
+        // Забытый пароль восстанавливается командой admin:password.
+        Admin::query()->firstOrCreate(
             ['email' => $this->config->string('shop.admin.email')],
             [
                 'name' => $this->config->string('shop.admin.name'),
