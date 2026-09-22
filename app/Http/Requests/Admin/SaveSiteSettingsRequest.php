@@ -10,6 +10,7 @@ class SaveSiteSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'default_category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:500'],
             'banner_enabled' => ['nullable', 'boolean'],
@@ -30,6 +31,7 @@ class SaveSiteSettingsRequest extends FormRequest
     {
         return [
             'banner_enabled' => $this->boolean('banner_enabled'),
+            'default_category_id' => $this->filled('default_category_id') ? $this->integer('default_category_id') : null,
             ...collect([
                 'seo_title',
                 'seo_description',

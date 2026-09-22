@@ -54,6 +54,9 @@ class SiteResource extends JsonResource
                 'label' => $method->label(),
             ], $this->resource['payment_methods']),
             'logo_url' => $settings->logo_image_url,
+            // Категория, на которой открывается каталог. Витрина работает со
+            // slug'ами, поэтому отдаётся он, а не идентификатор.
+            'default_category' => $settings->defaultCategory?->slug,
             'banner' => $this->banner($settings),
             'promo' => $settings->promo_heading === null && $settings->promo_body === null ? null : [
                 'heading' => $settings->promo_heading,

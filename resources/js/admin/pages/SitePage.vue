@@ -5,6 +5,7 @@ import { card, dangerButton, ghostButton, input, primaryButton } from '../ui'
 import RichEditor from '../components/RichEditor.vue'
 
 const form = reactive({
+    default_category_id: '',
     banner_enabled: false,
     banner_title: '',
     banner_subtitle: '',
@@ -19,6 +20,7 @@ const form = reactive({
     info_body: '',
 })
 
+const categories = ref([])
 const bannerImageUrl = ref(null)
 const integrations = ref(null)
 const logoImageUrl = ref(null)
@@ -39,7 +41,12 @@ function apply(data) {
 }
 
 onMounted(async () => {
-    const { data } = await api.get('/site')
+    const [{ data }, list] = await Promise.all([
+        api.get('/site'),
+        api.get('/categories', { params: { per_page: 100 } }),
+    ])
+
+    categories.value = list.data.data
     integrations.value = data.integrations
     apply(data.data)
     loaded.value = true
@@ -52,7 +59,10 @@ async function submit() {
     saving.value = true
 
     try {
-        const { data } = await api.put('/site', form)
+        const { data } = await api.put('/site', {
+            ...form,
+            default_category_id: form.default_category_id || null,
+        })
         apply(data.data)
         saved.value = true
     } catch (e) {
@@ -148,6 +158,32 @@ const removeLogo = () => remove('/site/logo')
                 и тестовым ключом <code>test_…</code> для оплаты. Задаются в панели хостинга.
             </p>
         </section>
+
+        <form :class="card" class="space-y-4 p-6" novalidate @submit.prevent="submit">
+            <h2 class="font-semibold">Каталог</h2>
+
+            <div>
+                <label for="default_category_id" class="mb-1.5 block text-sm text-ink-500">
+                    Категория по умолчанию на главной
+                </label>
+                <select id="default_category_id" v-model="form.default_category_id" :class="input">
+                    <option value="">Все товары</option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+                <p class="mt-1 text-xs text-ink-400">
+                    С неё открывается каталог, пока покупатель не выбрал другую.
+                </p>
+                <p v-if="errors.default_category_id" class="mt-1 text-sm text-red-700">
+                    {{ errors.default_category_id }}
+                </p>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" :class="primaryButton" :disabled="saving">Сохранить</button>
+            </div>
+        </form>
 
         <form :class="card" class="space-y-4 p-6" novalidate @submit.prevent="submit">
             <h2 class="font-semibold">Поисковая выдача</h2>

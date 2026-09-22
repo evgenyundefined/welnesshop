@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
+    'default_category_id',
     'seo_title',
     'seo_description',
     'banner_enabled',
@@ -23,6 +25,12 @@ use Illuminate\Support\Facades\Storage;
 ])]
 class SiteSetting extends Model
 {
+    /** @return BelongsTo<Category, $this> */
+    public function defaultCategory(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'default_category_id');
+    }
+
     /** @return Attribute<?string, never> */
     protected function logoImageUrl(): Attribute
     {

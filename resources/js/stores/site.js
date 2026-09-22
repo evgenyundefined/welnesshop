@@ -9,6 +9,7 @@ const state = reactive({
     max_item_quantity: 99,
     delivery_methods: [],
     payment_methods: [],
+    default_category: null,
     currency: 'RUB',
     rates: {},
     logo_url: null,
@@ -20,12 +21,20 @@ const state = reactive({
     ready: false,
 })
 
+let pending = null
+
 export const site = {
     state: readonly(state),
 
-    async load() {
-        const { data } = await api.get('/site')
+    /**
+     * Запрос один на всё приложение: настройки нужны и футеру, и каталогу,
+     * который без них не знает, какую категорию открыть.
+     */
+    load() {
+        pending ??= api.get('/site').then(({ data }) => {
+            Object.assign(state, data.data, { ready: true })
+        })
 
-        Object.assign(state, data.data, { ready: true })
+        return pending
     },
 }

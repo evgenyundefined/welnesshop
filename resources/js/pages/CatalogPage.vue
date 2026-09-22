@@ -17,18 +17,21 @@ const products = ref([])
 const meta = ref({ current_page: 1, last_page: 1, total: 0 })
 const loading = ref(true)
 
-// The category comes off the query string so a footer link lands on a filtered
-// catalog rather than the whole of it.
+// Категория берётся из адреса, чтобы ссылка из футера открывала каталог уже
+// отфильтрованным. Пока её не выбрали — undefined: это не «все товары», а
+// «ещё не решили», и грузить каталог в этот момент нечем.
 const filters = reactive({
-    category: route.query.category ?? null,
+    category: undefined,
     search: '',
     sort: 'name',
     in_stock: false,
     page: 1,
 })
 
+const defaultCategory = () => site.state.default_category ?? null
+
 watch(() => route.query.category, (category) => {
-    filters.category = category ?? null
+    filters.category = category ?? defaultCategory()
     filters.page = 1
 })
 
@@ -70,11 +73,20 @@ watch(
     },
 )
 
-watch(() => [filters.category, filters.sort, filters.in_stock, filters.page], loadProducts)
+watch(() => [filters.category, filters.sort, filters.in_stock, filters.page], () => {
+    if (filters.category !== undefined) {
+        loadProducts()
+    }
+})
 
 onMounted(async () => {
-    const [{ data }] = await Promise.all([api.get('/categories'), loadProducts()])
-    categories.value = data.data
+    const categories$ = api.get('/categories')
+
+    // Настройки приходят отдельным запросом, а категория по умолчанию живёт в
+    // них: без ожидания каталог успел бы показать «всё подряд» и перерисоваться.
+    filters.category = route.query.category ?? (await site.load(), defaultCategory())
+
+    categories.value = (await categories$).data.data
 })
 </script>
 

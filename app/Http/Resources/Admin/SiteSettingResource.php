@@ -18,6 +18,7 @@ class SiteSettingResource extends JsonResource
     {
         return [
             'logo_image_url' => $this->resource->logo_image_url,
+            'default_category_id' => $this->resource->default_category_id,
             'seo_title' => $this->resource->seo_title,
             'seo_description' => $this->resource->seo_description,
             'banner_enabled' => $this->resource->banner_enabled,
