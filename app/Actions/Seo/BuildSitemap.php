@@ -2,7 +2,6 @@
 
 namespace App\Actions\Seo;
 
-use App\Enums\ProductStatus;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
@@ -61,7 +60,7 @@ class BuildSitemap
     private function products(): Collection
     {
         return Product::query()
-            ->where('status', ProductStatus::Published)
+            ->onSale()
             ->orderBy('id')
             ->get(['slug', 'updated_at'])
             ->map(fn (Product $product): array => $this->entry(

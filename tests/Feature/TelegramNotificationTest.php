@@ -40,6 +40,28 @@ class TelegramNotificationTest extends TestCase
             && $request['text'] === 'привет');
     }
 
+    public function test_a_group_chat_id_is_passed_through_as_it_is(): void
+    {
+        // У группы идентификатор отрицательный, а у супергруппы ещё и длинный.
+        // Приводить его к числу нельзя: минус — часть адреса чата.
+        config()->set('services.telegram.chat_id', '-5404538753');
+        Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+
+        $this->assertSame('', $this->telegram()->deliver('привет'));
+
+        Http::assertSent(static fn ($request): bool => $request['chat_id'] === '-5404538753');
+    }
+
+    public function test_a_supergroup_chat_id_survives_too(): void
+    {
+        config()->set('services.telegram.chat_id', '-1002345678901');
+        Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+
+        $this->assertSame('', $this->telegram()->deliver('привет'));
+
+        Http::assertSent(static fn ($request): bool => $request['chat_id'] === '-1002345678901');
+    }
+
     public function test_an_unreachable_api_is_reported_not_swallowed(): void
     {
         // What a blocked host looks like from the inside: no answer at all.

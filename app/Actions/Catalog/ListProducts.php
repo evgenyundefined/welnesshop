@@ -25,7 +25,7 @@ class ListProducts
         [$column, $direction] = $sort->toOrderBy();
 
         return Product::query()
-            ->published()
+            ->onSale()
             ->with(['category', 'primaryImage'])
             ->when($categorySlug, static fn (Builder $query, string $slug) => $query->whereRelation('category', 'slug', $slug))
             ->when($search, static fn (Builder $query, string $term) => $query->where(

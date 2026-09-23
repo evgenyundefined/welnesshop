@@ -12,7 +12,15 @@ const page = ref(1)
 const error = ref('')
 
 const editing = ref(null)
-const form = reactive({ name: '', slug: '', description: '', position: 0, wholesale_only: false, min_order_quantity: 1 })
+const form = reactive({
+    name: '',
+    slug: '',
+    description: '',
+    position: 0,
+    wholesale_only: false,
+    min_order_quantity: 1,
+    under_development: false,
+})
 const formErrors = ref({})
 const formMessage = ref('')
 const saving = ref(false)
@@ -39,7 +47,15 @@ onMounted(load)
 
 function openCreate() {
     editing.value = 'new'
-    Object.assign(form, { name: '', slug: '', description: '', position: 0, wholesale_only: false, min_order_quantity: 1 })
+    Object.assign(form, {
+        name: '',
+        slug: '',
+        description: '',
+        position: 0,
+        wholesale_only: false,
+        min_order_quantity: 1,
+        under_development: false,
+    })
     formErrors.value = {}
     formMessage.value = ''
 }
@@ -53,6 +69,7 @@ function openEdit(category) {
         position: category.position,
         wholesale_only: category.wholesale_only,
         min_order_quantity: category.min_order_quantity,
+        under_development: category.under_development,
     })
     formErrors.value = {}
     formMessage.value = ''
@@ -163,7 +180,17 @@ async function remove(category) {
                             <span v-if="category.min_order_quantity > 1" class="ml-1 whitespace-nowrap">
                                 от {{ category.min_order_quantity }} шт.
                             </span>
-                            <span v-if="!category.wholesale_only && category.min_order_quantity <= 1">—</span>
+                            <span
+                                v-if="category.under_development"
+                                class="ml-1 rounded-full bg-ink-200 px-2 py-1 text-ink-600"
+                            >
+                                в разработке
+                            </span>
+                            <span
+                                v-if="!category.wholesale_only && category.min_order_quantity <= 1 && !category.under_development"
+                            >
+                                —
+                            </span>
                         </td>
                         <td :class="td">
                             <div class="flex items-center gap-1">
@@ -262,6 +289,17 @@ async function remove(category) {
                     </p>
                     <p v-if="formErrors.min_order_quantity" class="mt-1 text-sm text-red-700">
                         {{ formErrors.min_order_quantity }}
+                    </p>
+                </div>
+
+                <div class="rounded-lg border border-ink-200 bg-ink-50 p-4">
+                    <label class="flex items-center gap-2 text-sm">
+                        <input v-model="form.under_development" type="checkbox" class="size-4 accent-gold-500">
+                        Раздел в разработке
+                    </label>
+                    <p class="mt-1 text-xs text-ink-400">
+                        В каталоге вместо товаров появится сообщение, а сами товары раздела витрина показывать
+                        не будет — ни в каталоге, ни в футере, ни в карте сайта.
                     </p>
                 </div>
 

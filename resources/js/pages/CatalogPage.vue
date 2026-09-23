@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api'
 import { site } from '../stores/site'
@@ -29,6 +29,12 @@ const filters = reactive({
 })
 
 const defaultCategory = () => site.state.default_category ?? null
+
+// Раздел, который ещё наполняют: товаров в нём витрине не отдают, и вместо
+// пустого места покупатель видит, что происходит.
+const underDevelopment = computed(
+    () => categories.value.find((category) => category.slug === filters.category)?.under_development === true,
+)
 
 watch(() => route.query.category, (category) => {
     filters.category = category ?? defaultCategory()
@@ -117,7 +123,11 @@ onMounted(async () => {
                                 : 'text-ink-500 hover:bg-ink-50'"
                             @click="selectCategory(category.slug)"
                         >
-                            {{ category.name }} ({{ category.products_count }})
+                            <!-- У раздела в разработке счёт не показываем: он обещал бы
+                                 товары, которых покупатель там всё равно не увидит. -->
+                            {{ category.name }}
+                            <span v-if="!category.under_development">({{ category.products_count }})</span>
+                            <span v-else class="text-xs text-ink-400">— в разработке</span>
                         </button>
                     </li>
                 </ul>
@@ -145,6 +155,15 @@ onMounted(async () => {
 
         <section>
             <p v-if="loading" class="text-ink-400">Загрузка…</p>
+
+            <div
+                v-else-if="underDevelopment"
+                class="rounded-xl border border-gold-300 bg-gold-50 px-5 py-6 text-center"
+            >
+                <p class="font-semibold text-ink-900">Раздел находится в разработке</p>
+                <p class="mt-1 text-sm text-ink-600">Мы наполняем его товарами — загляните позже.</p>
+            </div>
+
             <p v-else-if="!products.length" class="text-ink-400">Ничего не найдено.</p>
 
             <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

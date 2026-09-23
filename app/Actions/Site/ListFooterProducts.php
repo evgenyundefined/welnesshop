@@ -16,7 +16,7 @@ class ListFooterProducts
     public function __invoke(): Collection
     {
         return Product::query()
-            ->published()
+            ->onSale()
             ->inRandomOrder()
             ->limit($this->config->integer('shop.footer_products'))
             ->get(['id', 'slug', 'name']);

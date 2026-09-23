@@ -45,6 +45,7 @@ class ResourceShapeTest extends TestCase
             'position' => 20,
             'wholesale_only' => false,
             'min_order_quantity' => 1,
+            'under_development' => false,
             'products_count' => 2,
         ], $payload);
     }
@@ -91,6 +92,7 @@ class ResourceShapeTest extends TestCase
                         'position' => $category->position,
                         'wholesale_only' => false,
                         'min_order_quantity' => 1,
+                        'under_development' => false,
                     ],
                     'images' => [],
                 ],

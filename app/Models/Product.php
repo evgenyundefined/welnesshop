@@ -80,6 +80,17 @@ class Product extends Model
         $query->where('status', ProductStatus::Published);
     }
 
+    /**
+     * То, что магазин действительно предлагает: опубликовано и лежит в
+     * разделе, который уже открыт. Раздел «в разработке» не выставляет свои
+     * товары нигде — ни в каталоге, ни в футере, ни в карте сайта.
+     */
+    #[Scope]
+    protected function onSale(Builder $query): void
+    {
+        $query->published()->whereRelation('category', 'under_development', false);
+    }
+
     public function isAvailable(): bool
     {
         return $this->status->isVisibleInCatalog() && $this->stock > 0;

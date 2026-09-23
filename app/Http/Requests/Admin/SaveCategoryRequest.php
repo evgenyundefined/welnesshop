@@ -24,6 +24,7 @@ class SaveCategoryRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'position' => ['nullable', 'integer', 'min:0', 'max:65535'],
             'wholesale_only' => ['nullable', 'boolean'],
+            'under_development' => ['nullable', 'boolean'],
             'min_order_quantity' => ['nullable', 'integer', 'min:1', 'max:'.$config->integer('shop.max_item_quantity')],
         ];
     }
@@ -56,6 +57,7 @@ class SaveCategoryRequest extends FormRequest
      *     description: ?string,
      *     position: int,
      *     wholesale_only: bool,
+     *     under_development: bool,
      *     min_order_quantity: int
      * }
      */
@@ -69,6 +71,7 @@ class SaveCategoryRequest extends FormRequest
             'description' => $this->filled('description') ? trim($this->string('description')->toString()) : null,
             'position' => $this->filled('position') ? $this->integer('position') : 0,
             'wholesale_only' => $this->boolean('wholesale_only'),
+            'under_development' => $this->boolean('under_development'),
             'min_order_quantity' => $this->filled('min_order_quantity') ? $this->integer('min_order_quantity') : 1,
         ];
     }

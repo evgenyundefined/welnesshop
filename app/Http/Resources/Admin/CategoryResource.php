@@ -24,6 +24,7 @@ class CategoryResource extends JsonResource
             'position' => $this->resource->position,
             'wholesale_only' => $this->resource->wholesale_only,
             'min_order_quantity' => $this->resource->min_order_quantity,
+            'under_development' => $this->resource->under_development,
             'products_count' => $this->whenCounted('products'),
         ];
     }
